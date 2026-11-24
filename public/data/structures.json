@@ -1,0 +1,324 @@
+{
+  "reviewed": false,
+  "groups": [
+    {
+      "id": "lobes",
+      "name": "Cerebral lobes"
+    },
+    {
+      "id": "white-matter",
+      "name": "White matter"
+    },
+    {
+      "id": "posterior-fossa",
+      "name": "Brainstem & cerebellum"
+    },
+    {
+      "id": "deep-grey",
+      "name": "Deep grey nuclei"
+    },
+    {
+      "id": "csf",
+      "name": "CSF spaces"
+    }
+  ],
+  "topics": [
+    {
+      "id": "lobes",
+      "name": "Lobes & brainstem",
+      "groups": [
+        "lobes",
+        "white-matter",
+        "posterior-fossa",
+        "deep-grey"
+      ],
+      "focus": [
+        0,
+        -18,
+        10
+      ],
+      "intro": "The cerebrum is divided into frontal, parietal, temporal and occipital lobes, with the insula hidden deep in the Sylvian fissure. Below the tentorium sit the brainstem (midbrain, pons, medulla) and cerebellum. Scroll through the axial CT and watch the coloured slice and the 3D cut move together. Remember CT is displayed radiologically: the patient's left is on the right of the screen."
+    },
+    {
+      "id": "csf",
+      "name": "CSF system",
+      "groups": [
+        "csf",
+        "deep-grey"
+      ],
+      "focus": [
+        0,
+        -10,
+        18
+      ],
+      "intro": "CSF is produced mainly by choroid plexus in the lateral ventricles and flows: lateral ventricles → foramina of Monro → third ventricle → cerebral aqueduct → fourth ventricle → foramina of Luschka and Magendie → basal cisterns and subarachnoid space → arachnoid granulations. Phase 1 shows the lateral ventricles; third/fourth ventricles and cisterns follow."
+    }
+  ],
+  "structures": [
+    {
+      "id": "frontal-lobe",
+      "name": "Frontal lobe",
+      "group": "lobes",
+      "layer": "anatomy",
+      "labelValue": 1,
+      "color": "#4e79a7",
+      "meshes": [
+        "frontal-lobe_L.glb",
+        "frontal-lobe_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Anterior to the central sulcus and above the Sylvian fissure. Contains motor cortex (precentral gyrus), Broca's area (dominant inferior frontal gyrus), and prefrontal cortex for executive function and behaviour. The orbitofrontal surfaces sit on the anterior cranial fossa roof — a classic site for contusions after deceleration injury.",
+      "ctNotes": "Look along the orbital roofs and frontal poles for contre-coup contusions; they are easily missed adjacent to bone — use a narrow window."
+    },
+    {
+      "id": "parietal-lobe",
+      "name": "Parietal lobe",
+      "group": "lobes",
+      "layer": "anatomy",
+      "labelValue": 2,
+      "color": "#f28e2b",
+      "meshes": [
+        "parietal-lobe_L.glb",
+        "parietal-lobe_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Behind the central sulcus, in front of the parieto-occipital sulcus. Primary somatosensory cortex (postcentral gyrus) and association cortex for spatial awareness. Non-dominant parietal lesions cause neglect — a useful bedside sign in the sedation hold.",
+      "ctNotes": "On high axial slices the central sulcus separates frontal from parietal; the precentral gyrus is usually thicker than the postcentral."
+    },
+    {
+      "id": "temporal-lobe",
+      "name": "Temporal lobe",
+      "group": "lobes",
+      "layer": "anatomy",
+      "labelValue": 3,
+      "color": "#59a14f",
+      "meshes": [
+        "temporal-lobe_L.glb",
+        "temporal-lobe_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Below the Sylvian fissure in the middle cranial fossa. Auditory cortex, Wernicke's area (dominant superior temporal gyrus) and memory structures medially. The medial temporal lobe (uncus, parahippocampal gyrus) lies at the tentorial edge and herniates over it in uncal herniation, compressing CN III and the midbrain.",
+      "ctNotes": "Temporal poles sit against the greater wing of sphenoid — another contusion site. Beam-hardening artefact from the petrous bones can mimic or hide pathology here."
+    },
+    {
+      "id": "occipital-lobe",
+      "name": "Occipital lobe",
+      "group": "lobes",
+      "layer": "anatomy",
+      "labelValue": 4,
+      "color": "#e15759",
+      "meshes": [
+        "occipital-lobe_L.glb",
+        "occipital-lobe_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Posterior to the parieto-occipital sulcus, above the tentorium. Primary visual cortex lines the calcarine sulcus. Supplied mainly by the posterior cerebral artery — PCA compression against the tentorium in transtentorial herniation can cause occipital infarction.",
+      "ctNotes": "Look for the calcarine sulcus on medial axial slices just above the tentorium."
+    },
+    {
+      "id": "insula",
+      "name": "Insula",
+      "group": "lobes",
+      "layer": "anatomy",
+      "labelValue": 5,
+      "color": "#edc948",
+      "meshes": [
+        "insula_L.glb",
+        "insula_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Cortex buried deep in the Sylvian fissure, covered by the frontal, parietal and temporal opercula. Supplied by MCA branches running over its surface.",
+      "ctNotes": "Loss of the insular ribbon (insula blending with the adjacent white matter / extreme capsule) is one of the earliest CT signs of MCA infarction and is an ASPECTS region."
+    },
+    {
+      "id": "limbic-lobe",
+      "name": "Cingulate / limbic cortex",
+      "group": "lobes",
+      "layer": "anatomy",
+      "labelValue": 6,
+      "color": "#b07aa1",
+      "meshes": [
+        "limbic-lobe_L.glb",
+        "limbic-lobe_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "The cingulate gyrus wraps around the corpus callosum on the medial surface of each hemisphere, beneath the falx. In subfalcine herniation the cingulate gyrus is pushed under the free edge of the falx, and the anterior cerebral arteries can be compressed.",
+      "ctNotes": "Midline shift is measured at the septum pellucidum, just below the cingulate gyri."
+    },
+    {
+      "id": "corpus-callosum",
+      "name": "Corpus callosum",
+      "group": "white-matter",
+      "layer": "anatomy",
+      "labelValue": 50,
+      "color": "#e8e3d3",
+      "meshes": [
+        "corpus-callosum.glb"
+      ],
+      "lateralised": false,
+      "notes": "The largest commissure, joining the two hemispheres: rostrum and genu in front, body over the lateral ventricles, splenium behind. It forms the roof of the lateral ventricles and lies directly beneath the falx and cingulate gyri. The splenium and body are classic sites of diffuse axonal injury after high-energy trauma.",
+      "ctNotes": "Small haemorrhages in the corpus callosum (especially the splenium) on CT after trauma suggest diffuse axonal injury, which is often far worse on MRI. CT can look nearly normal despite deep coma."
+    },
+    {
+      "id": "internal-capsule",
+      "name": "Internal capsule",
+      "group": "white-matter",
+      "layer": "anatomy",
+      "labelValue": 51,
+      "color": "#f5f0e1",
+      "meshes": [
+        "internal-capsule_L.glb",
+        "internal-capsule_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "A compact V-shaped band of white matter (apex medially, the genu) between the caudate and thalamus medially and the lentiform nucleus laterally. The posterior limb carries the corticospinal tract, so a small lacunar infarct or haemorrhage here can cause a dense contralateral hemiplegia. Supplied mainly by lenticulostriate arteries (MCA) and the anterior choroidal artery.",
+      "ctNotes": "On axial CT at the level of the third ventricle, look for the '>' / '<' shape of each internal capsule; ASPECTS region IC. Putaminal haemorrhages often extend into it."
+    },
+    {
+      "id": "cerebellum",
+      "name": "Cerebellum",
+      "group": "posterior-fossa",
+      "layer": "anatomy",
+      "labelValue": 10,
+      "color": "#76b7b2",
+      "meshes": [
+        "cerebellum_L.glb",
+        "cerebellum_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Occupies most of the posterior fossa beneath the tentorium. Coordinates movement — lesions cause ipsilateral ataxia. The posterior fossa is a small, rigid compartment: cerebellar swelling or haemorrhage can rapidly compress the fourth ventricle (obstructive hydrocephalus) and the brainstem, and push the tonsils through the foramen magnum.",
+      "ctNotes": "Posterior fossa CT is degraded by beam hardening between the petrous bones. Check the fourth ventricle is open and the temporal horns are not dilated."
+    },
+    {
+      "id": "midbrain",
+      "name": "Midbrain",
+      "group": "posterior-fossa",
+      "layer": "anatomy",
+      "labelValue": 11,
+      "color": "#f1a3c0",
+      "meshes": [
+        "midbrain.glb"
+      ],
+      "lateralised": false,
+      "notes": "Uppermost brainstem, passing through the tentorial notch. Contains the CN III and IV nuclei, the cerebral peduncles (corticospinal tracts) and the aqueduct. Compression in transtentorial herniation produces a fixed dilated pupil, reduced conscious level and posturing; Duret haemorrhages may follow.",
+      "ctNotes": "On axial CT the midbrain has a 'Mickey Mouse' shape surrounded by the ambient and quadrigeminal cisterns. Effacement of these cisterns is a key sign of raised ICP."
+    },
+    {
+      "id": "pons",
+      "name": "Pons",
+      "group": "posterior-fossa",
+      "layer": "anatomy",
+      "labelValue": 12,
+      "color": "#d4729b",
+      "meshes": [
+        "pons.glb"
+      ],
+      "lateralised": false,
+      "notes": "Middle brainstem, anterior to the fourth ventricle, resting on the clivus. Contains CN V–VIII nuclei and the corticospinal tracts. The basilar artery runs in the prepontine cistern in front of it — basilar occlusion is an important cause of coma with an initially near-normal CT.",
+      "ctNotes": "A hyperdense basilar artery in the prepontine cistern can be the only CT clue to basilar thrombosis."
+    },
+    {
+      "id": "medulla",
+      "name": "Medulla",
+      "group": "posterior-fossa",
+      "layer": "anatomy",
+      "labelValue": 13,
+      "color": "#a8517a",
+      "meshes": [
+        "medulla.glb"
+      ],
+      "lateralised": false,
+      "notes": "Lowest brainstem, continuous with the spinal cord at the foramen magnum. Contains the cardiorespiratory centres and CN IX–XII nuclei. Tonsillar herniation compresses the medulla, causing Cushing's response, respiratory arrest and death.",
+      "ctNotes": "At the foramen magnum, the cerebellar tonsils should not crowd out the CSF around the medulla (cisterna magna)."
+    },
+    {
+      "id": "caudate",
+      "name": "Caudate nucleus",
+      "group": "deep-grey",
+      "layer": "anatomy",
+      "labelValue": 20,
+      "color": "#8cd17d",
+      "meshes": [
+        "caudate_L.glb",
+        "caudate_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "C-shaped nucleus whose head forms the lateral wall of the frontal horn of the lateral ventricle. Part of the basal ganglia. Supplied by lenticulostriate arteries and the recurrent artery of Heubner.",
+      "ctNotes": "The caudate head is an ASPECTS region (C). Caudate atrophy enlarges the frontal horns."
+    },
+    {
+      "id": "lentiform",
+      "name": "Lentiform nucleus",
+      "group": "deep-grey",
+      "layer": "anatomy",
+      "labelValue": 21,
+      "color": "#ffbe7d",
+      "meshes": [
+        "lentiform_L.glb",
+        "lentiform_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Putamen (lateral) and globus pallidus (medial), separated from the caudate and thalamus by the internal capsule. The putamen is the commonest site of hypertensive intracerebral haemorrhage. The globus pallidus is classically affected in carbon monoxide poisoning and hypoxic injury.",
+      "ctNotes": "Loss of the clear outline of the lentiform nucleus is an early sign of MCA (lenticulostriate) infarction — ASPECTS region L."
+    },
+    {
+      "id": "thalamus",
+      "name": "Thalamus",
+      "group": "deep-grey",
+      "layer": "anatomy",
+      "labelValue": 22,
+      "color": "#a0cbe8",
+      "meshes": [
+        "thalamus_L.glb",
+        "thalamus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Paired relay nuclei either side of the third ventricle, medial to the posterior limb of the internal capsule. Second commonest site of hypertensive haemorrhage; thalamic bleeds often rupture into the ventricles (IVH → hydrocephalus). Bilateral thalamic infarction (artery of Percheron, deep venous thrombosis) causes coma.",
+      "ctNotes": "Bilateral thalamic hypodensity should prompt a look at the deep veins and straight sinus for thrombosis."
+    },
+    {
+      "id": "hippocampus",
+      "name": "Hippocampus",
+      "group": "deep-grey",
+      "layer": "anatomy",
+      "labelValue": 23,
+      "color": "#d37295",
+      "meshes": [
+        "hippocampus_L.glb",
+        "hippocampus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Medial temporal grey matter in the floor of the temporal horn, essential for memory. Very sensitive to hypoxia and prolonged seizures.",
+      "ctNotes": "Poorly seen on CT; dilated temporal horns next to it are an early sign of hydrocephalus."
+    },
+    {
+      "id": "amygdala",
+      "name": "Amygdala",
+      "group": "deep-grey",
+      "layer": "anatomy",
+      "labelValue": 24,
+      "color": "#c9a227",
+      "meshes": [
+        "amygdala_L.glb",
+        "amygdala_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Nuclear complex in the anteromedial temporal lobe, in front of the hippocampus and deep to the uncus. Marks the region that herniates medially over the tentorial edge in uncal herniation."
+    },
+    {
+      "id": "lateral-ventricle",
+      "name": "Lateral ventricle",
+      "group": "csf",
+      "layer": "anatomy",
+      "labelValue": 30,
+      "color": "#2fb8ff",
+      "meshes": [
+        "lateral-ventricle_L.glb",
+        "lateral-ventricle_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Paired C-shaped cavities: frontal horn, body, atrium (trigone), occipital horn and temporal horn. Each drains through its foramen of Monro into the third ventricle. Choroid plexus in the atrium often calcifies. EVDs are aimed at the frontal horn just anterior to the foramen of Monro.",
+      "ctNotes": "Early hydrocephalus: rounded frontal horns and temporal horns wider than ~2 mm. Midline shift: measure the septum pellucidum's displacement from the midline."
+    }
+  ]
+}

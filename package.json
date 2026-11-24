@@ -1,0 +1,22 @@
+{
+  "name": "neuroanatomy-icu",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/run.mjs vite",
+    "build": "node tools/run.mjs tsc --noEmit && node tools/run.mjs vite build",
+    "preview": "node tools/run.mjs vite preview",
+    "typecheck": "node tools/run.mjs tsc --noEmit",
+    "deps": "node -e \"const fs=require('fs');const d='C:/node_modules/ct-brain-anatomy';fs.mkdirSync(d,{recursive:true});fs.copyFileSync('package.json',d+'/package.json')\" && npm install --prefix C:/node_modules/ct-brain-anatomy"
+  },
+  "dependencies": {
+    "@niivue/niivue": "^0.69.0",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.187.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.0"
+  }
+}

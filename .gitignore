@@ -1,0 +1,8 @@
+node_modules/
+dist/
+pipeline/cache/
+pipeline/.venv/
+__pycache__/
+*.pyc
+.claude/settings.local.json
+vite.config.mjs.timestamp-*

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NeuroAnatomy for ICU</title>
+  <meta name="description" content="Linked CT and 3D neuroanatomy for ICU registrars" />
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">NeuroAnatomy <span>for ICU</span></div>
+    <nav id="topic-tabs" class="tabs" aria-label="Topics"></nav>
+    <div class="topbar-right">
+      <button id="about-btn" class="ghost" type="button">About &amp; sources</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar" aria-label="Controls">
+      <section class="panel-block">
+        <h2>View</h2>
+        <div class="row">Panels
+          <div id="panel-buttons" class="seg" role="group" aria-label="Show or hide panels"></div>
+        </div>
+        <div id="plane-buttons" class="seg" role="group" aria-label="Slice plane"></div>
+        <label class="row">Layout
+          <select id="layout-select">
+            <option value="single">Single plane (large)</option>
+            <option value="multi">Three planes</option>
+          </select>
+        </label>
+        <label class="row">Window
+          <select id="window-select"></select>
+        </label>
+        <label class="row">Colour over CT
+          <input id="opacity-range" type="range" min="0" max="1" step="0.05" />
+        </label>
+        <label class="check"><input id="clip-check" type="checkbox" /> Cut 3D model at slice</label>
+        <label class="row">Explode lobes
+          <input id="explode-range" type="range" min="0" max="1" step="0.05" />
+        </label>
+        <label class="check"><input id="radio-check" type="checkbox" /> Radiological convention (L on right)</label>
+      </section>
+      <section class="panel-block grow">
+        <h2>Structures</h2>
+        <div id="structure-list" class="structure-list"></div>
+      </section>
+    </aside>
+
+    <section class="viewers" id="viewers" data-count="3">
+      <figure class="viewer" id="viewer-ct">
+        <figcaption><span>CT</span><span class="readout" id="readout-ct"></span></figcaption>
+        <canvas id="canvas-ct"></canvas>
+      </figure>
+      <figure class="viewer" id="viewer-stylised">
+        <figcaption><span>Stylised slice</span><span class="readout" id="readout-stylised"></span></figcaption>
+        <canvas id="canvas-stylised"></canvas>
+      </figure>
+      <figure class="viewer" id="viewer-3d">
+        <figcaption><span>3D model</span><span class="readout" id="readout-3d"></span></figcaption>
+        <div id="container-3d" class="three-host"></div>
+      </figure>
+    </section>
+
+    <aside class="info" id="info-panel" aria-live="polite"></aside>
+  </main>
+
+  <dialog id="about-dialog">
+    <div id="about-content"></div>
+    <form method="dialog"><button>Close</button></form>
+  </dialog>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

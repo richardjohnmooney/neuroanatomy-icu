@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "strict": true,
+    "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "three": [
+        "node_modules/@types/three",
+        "C:/node_modules/ct-brain-anatomy/node_modules/@types/three"
+      ],
+      "three/*": [
+        "node_modules/@types/three/*",
+        "C:/node_modules/ct-brain-anatomy/node_modules/@types/three/*"
+      ],
+      "@niivue/niivue": [
+        "node_modules/@niivue/niivue",
+        "C:/node_modules/ct-brain-anatomy/node_modules/@niivue/niivue"
+      ]
+    },
+    "types": []
+  },
+  "include": [
+    "src"
+  ]
+}
