@@ -25,17 +25,19 @@ export function initSidebar(data: AppData): void {
 export function applyTopic(data: AppData, topicId: string): void {
   const t = data.manifest.topics.find((x) => x.id === topicId);
   if (!t) return;
+  const off = new Set(t.defaultHidden ?? []);
   setState({
     topicId,
-    visible: new Set(topicStructures(data, topicId).map((s) => s.id)),
+    visible: new Set(topicStructures(data, topicId).filter((s) => !off.has(s.group)).map((s) => s.id)),
     selectedId: null,
     ...(t.focus ? { crosshair: t.focus } : {}),
+    ...(t.plane ? { plane: t.plane } : {}),
   }, 'topic');
 }
 
 function initTabs(data: AppData): void {
   const nav = $('topic-tabs');
-  const planned = ['Fissures & sulci', 'Vessels', 'Falx & tentorium', 'Herniation', 'Raised ICP'];
+  const planned = ['Vessels', 'Herniation', 'Raised ICP'];
   for (const t of data.manifest.topics) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -263,7 +265,7 @@ function initAbout(data: AppData): void {
       ...data.volumes.baseVolumes.map((v) => v.attribution),
       'Lobes, insula, deep grey nuclei, lateral ventricles: Harvard–Oxford cortical and subcortical atlases (FMRIB, University of Oxford; FSL licence, non-commercial use)',
       'Cerebellum and brainstem divisions: Talairach Daemon atlas in MNI space (Lancaster et al. 2000), via nilearn',
-      'Corpus callosum and internal capsule: derived from the above in this project’s pipeline',
+      'Corpus callosum, internal capsule, third/fourth ventricles, aqueduct, basal cisterns, fissures/sulci, falx and tentorium: derived from the above and the CT in this project’s pipeline (approximate, for teaching)',
       'Rendering: NiiVue (BSD-2), three.js (MIT)',
     ];
     for (const t of items) { const li = document.createElement('li'); li.textContent = t; ul.append(li); }

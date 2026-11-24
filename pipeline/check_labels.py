@@ -51,10 +51,46 @@ def render(lab, A):
             plt.close(fig)
 
 
+def render_overlay(lab, A):
+    """CT (brain window W80 L40) with anatomy label colours; extra CSF-focused views, axes in MNI mm."""
+    hu = np.asarray(nib.load(str(DATA / "ct.nii.gz")).dataobj).astype(np.float32)
+    cols = {s["labelValue"]: s["color"] for s in structures() if s["layer"] == "anatomy"}
+    csf = [31, 32, 33, 40, 41, 42, 43, 44, 45, 30]
+    rgba = np.zeros(lab.shape + (4,), np.float32)
+    for v, c in cols.items():
+        rgba[lab == v, :3] = matplotlib.colors.to_rgb(c)
+        rgba[lab == v, 3] = 0.85 if v in csf else 0.25
+    # (axis, mm, (h-axis range mm), (v-axis range mm))
+    views = {"axial_z-10": (2, -10, (-60, 60), (-90, 50)), "axial_z-30": (2, -30, (-60, 60), (-90, 40)),
+             "sagittal_x0": (0, 0, (-100, 60), (-75, 40)), "coronal_y-30": (1, -30, (-60, 60), (-75, 40))}
+    org = A[:3, 3]
+    for name, (ax_, w, hr, vr) in views.items():
+        k = int(round(w - org[ax_]))
+        axes = [i for i in range(3) if i != ax_]            # in-plane axes (voxel order)
+        res = []
+        for vol in (hu, rgba):
+            sl = np.take(vol, k, axis=ax_)
+            sl = np.swapaxes(sl, 0, 1)                       # rows = 2nd axis, cols = 1st axis
+            res.append(sl)
+        h0, v0 = org[axes[0]], org[axes[1]]
+        ext = (h0, h0 + hu.shape[axes[0]] - 1, v0, v0 + hu.shape[axes[1]] - 1)
+        for tag, over in (("", True), ("_ct", False)):
+            fig, a = plt.subplots(figsize=(8, 7))
+            a.imshow(res[0], origin="lower", cmap="gray", vmin=0, vmax=80, extent=ext, interpolation="nearest")
+            if over:
+                a.imshow(res[1], origin="lower", extent=ext, interpolation="nearest")
+            a.set_xlim(*hr); a.set_ylim(*vr)
+            a.set_xlabel("xyz"[axes[0]] + " mm"); a.set_ylabel("xyz"[axes[1]] + " mm"); a.set_title(name + tag)
+            a.set_aspect("equal")
+            fig.savefig(CACHE / f"check_{name}{tag}.png", dpi=80, bbox_inches="tight")
+            plt.close(fig)
+
+
 def main():
     lab, A = load()
     sample_points(lab, A)
     render(lab, A)
+    render_overlay(lab, A)
 
 
 if __name__ == "__main__":

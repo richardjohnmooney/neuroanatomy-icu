@@ -34,6 +34,10 @@ def mask_to_mesh(mask, affine, sigma=0.8):
     return m
 
 
+# Per-layer Gaussian sigma before marching cubes (thin sheets like dura/sulci need less smoothing).
+SIGMA = {"anatomy": 0.8, "sulci": 0.6, "dura": 0.6}
+
+
 def build_layer(layer, label_file):
     img = nib.load(str(DATA / label_file))
     lab = np.asarray(img.dataobj)
@@ -50,7 +54,7 @@ def build_layer(layer, label_file):
                 m = base & (left if fn.endswith("_L.glb") else ~left)
             else:
                 m = base
-            mesh = mask_to_mesh(m, A)
+            mesh = mask_to_mesh(m, A, sigma=SIGMA.get(layer, 0.8))
             mesh.export(MESH_DIR / fn)
             c = mesh.centroid
             summary.append((fn, len(mesh.faces), (MESH_DIR / fn).stat().st_size, c))
@@ -58,7 +62,14 @@ def build_layer(layer, label_file):
 
 
 def main():
-    out = build_layer("anatomy", "labels_anatomy.nii.gz")
+    import json
+    vols = json.loads((DATA / "volumes.json").read_text(encoding="utf8"))
+    out = []
+    for L in vols["labelLayers"]:
+        if (DATA / L["file"]).exists():
+            out += build_layer(L["id"], L["file"])
+        else:
+            print(f"skip layer {L['id']}: {L['file']} not built yet")
     tot = 0
     for fn, nf, sz, c in out:
         tot += sz

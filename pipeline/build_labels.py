@@ -138,7 +138,116 @@ def derive_internal_capsule(allowed, lent, cau_thal, Z):
     return allowed & (dl <= IC_D_LENT) & (dc <= IC_D_CT) & (Z >= -5) & (Z <= 22)
 
 
-def build_anatomy_labels():
+# ---------------------------------------------------------------------------------------------
+# CSF spaces (labels 31-33 ventricles, 40-45 cisterns).  CT is the evidence: CSF is dark.  Each space =
+# low-HU voxels inside an anatomically defined ROI (neighbouring labels + MNI bounds).  The template CT is
+# 2 mm and blurred, so the slit-like spaces (3rd ventricle, aqueduct) use a geometric fallback.
+CSF_T = 17.0           # HU threshold for "CSF-like" (brain ~25-35, lateral ventricle median ~2)
+CSF_T_RELAX = 23.0     # relaxed threshold for the small, partial-volumed cisterns
+# sagittal (y, z) outline of the third ventricle: foramen of Monro -> roof -> pineal recess -> aqueduct
+# opening -> floor -> optic / infundibular recesses -> anterior wall
+V3_POLY = [(3, 13), (-6, 14), (-18, 12), (-25, 7), (-29, -2), (-26, -5), (-18, -7), (-8, -9), (1, -10), (4, -5)]
+V3_HALF_W = 1.9        # mm, half-width at mid-height, narrowing towards roof/floor
+# aqueduct centreline (y, z) at x=0 and tube radius (mm); runs through the dorsal midbrain into the 4th ventricle
+AQ_PATH = [(-28, -2), (-31, -6), (-35, -12), (-38, -17), (-41, -22)]
+AQ_RADIUS = 1.5
+MAGENDIE_PATH = [(-44, -38), (-49, -46), (-56, -54), (-61, -60)]   # 4th ventricle floor -> cisterna magna (y, z)
+# axial (x, y) outline of the suprasellar cistern at the chiasm level
+SUPRA_POLY = [(-2.5, 17), (2.5, 17), (4, 8), (15, 5), (15, 1), (8, -3), (5, -6), (-5, -6), (-8, -3), (-15, 1), (-15, 5), (-4, 8)]
+
+
+def _in_poly(Y, Z, poly):
+    """(y, z) polygon -> boolean array broadcastable against the (x, y, z) grid."""
+    from matplotlib.path import Path
+    yy, zz = np.meshgrid(Y.ravel(), Z.ravel(), indexing="ij")
+    m = Path(poly).contains_points(np.stack([yy.ravel(), zz.ravel()], 1)).reshape(yy.shape)
+    return m[None, :, :]
+
+
+def _in_poly_xy(X, Y, poly):
+    """(x, y) polygon -> boolean array broadcastable against the grid (any z)."""
+    from matplotlib.path import Path
+    xx, yy = np.meshgrid(X.ravel(), Y.ravel(), indexing="ij")
+    m = Path(poly).contains_points(np.stack([xx.ravel(), yy.ravel()], 1)).reshape(xx.shape)
+    return m[:, :, None]
+
+
+def _tube(X, Y, Z, path, radius):
+    """Union of capsules along a polyline in the (y, z) plane at x=0 (arrays broadcast)."""
+    m = np.zeros(np.broadcast(X, Y, Z).shape, bool)
+    for (y0, z0), (y1, z1) in zip(path[:-1], path[1:]):
+        dy, dz = y1 - y0, z1 - z0
+        t = np.clip(((Y - y0) * dy + (Z - z0) * dz) / (dy * dy + dz * dz), 0, 1)
+        m |= X ** 2 + (Y - (y0 + t * dy)) ** 2 + (Z - (z0 + t * dz)) ** 2 <= radius ** 2
+    return m
+
+
+def _largest(m):
+    lab, n = ndi.label(m, structure=np.ones((3, 3, 3)))
+    return m if n <= 1 else lab == (np.argmax(np.bincount(lab.ravel())[1:]) + 1)
+
+
+def add_csf_labels(out, hu):
+    out = out.copy()
+    X, Y, Z = world_axes()
+    ax = np.abs(X)
+    bone = ndi.maximum_filter(hu, size=3) > 60           # keep CSF voxels away from bone / air-bone partial volume
+    low = (hu < CSF_T) & (hu > -10) & ~bone
+    lowr = (hu < CSF_T_RELAX) & (hu > -10) & ~bone
+    cb, mid, pons, med = (out == v for v in (10, 11, 12, 13))
+    d_mid = ndi.distance_transform_edt(~mid)
+    d_pons = ndi.distance_transform_edt(~pons)
+    d_stem = ndi.distance_transform_edt(~(mid | pons | med))
+
+    LOBES = (0, 1, 2, 3, 4, 5, 6)                                    # cisterns may replace unlabelled / lobe-filled voxels
+
+    def put(mask, v, over=LOBES):
+        m = mask & np.isin(out, over)
+        out[m] = v
+        return m
+
+    # --- third ventricle: sagittal outline x slit between the thalami (geometric; thalami abut in the atlas)
+    prof = _in_poly(Y, Z, V3_POLY)
+    zc = (Z - (-10)) / (14 - (-10))                                  # 0 floor .. 1 roof
+    hw = V3_HALF_W * np.clip(1.15 - 1.6 * np.abs(zc - 0.5), 0.35, 1.0)
+    v3 = prof & (ax <= hw)
+    put(v3, 31, over=(0, 22, 6, 1, 11))
+    # --- aqueduct (centreline tube; overwrites midbrain)
+    put(_tube(X, Y, Z, AQ_PATH, AQ_RADIUS), 32, over=(0, 11, 12, 22, 10))
+    # --- fourth ventricle: low-HU gap between pons/medulla (front) and cerebellum (behind)
+    hw4 = np.clip(9.0 - 0.55 * np.abs(Z + 31), 1.5, 9.0)
+    r4 = (ax <= hw4) & (Y >= -54) & (Y <= -36) & (Z >= -42) & (Z <= -18)
+    put(_largest(r4 & low), 33, over=(0, 10))
+    # --- cisterna magna: low HU behind the medulla / below the cerebellum, above the foramen magnum;
+    # joined to the 4th ventricle by a median channel (foramen of Magendie) through the unlabelled vallecula
+    rm = (ax <= 12) & (Y >= -74) & (Y <= -50) & (Z >= -68) & (Z <= -48)
+    put(_largest(rm & lowr), 44, over=(0, 10))
+    put(_tube(X, Y, Z, MAGENDIE_PATH, 2.0), 44, over=(0, 10, 13))
+    # --- quadrigeminal: dark strip behind the tectum, under the splenium (the atlas cerebellum label
+    # overlaps it by a few mm, so cerebellar voxels may be replaced)
+    rq = (ax <= 10) & (Y >= -54) & (Y <= -34) & (Z >= -10) & (Z <= 8) & (d_mid <= 12)
+    put(_largest(rq & lowr), 42, over=LOBES + (10,))
+    # --- prepontine: between clivus and anterior pons
+    rp = (ax <= 10) & (Y >= -24) & (Y <= -4) & (Z >= -44) & (Z <= -18) & (d_pons <= 4.5)
+    put(_largest(rp & lowr), 43)
+    # --- interpeduncular: fossa notched into the front of the midbrain (wedge, apex posterior) plus the
+    # low-HU space immediately in front of it
+    wedge = (Y >= -17) & (Y <= -4) & (Z >= -17) & (Z <= -4) & (ax <= np.clip(0.4 * (Y + 17), 0, 4.0)) & (d_mid <= 12)
+    put(wedge & mid, 45, over=(11,))
+    ri = (ax <= 6) & (Y >= -24) & (Y <= -4) & (Z >= -18) & (Z <= -3) & (d_mid <= 3)
+    put(ri & lowr, 45)
+    # --- suprasellar: pentagon / star around the optic chiasm (anterior interhemispheric arm, Sylvian
+    # arms laterally, posterior limbs towards the interpeduncular fossa); geometric, CT-gated
+    star = _in_poly_xy(X, Y, SUPRA_POLY) & (Z >= -15) & (Z <= -4)
+    put(star & (hu < 30) & ~bone, 40)
+    # --- ambient: thin wing (shell) round the lateral midbrain, in front joining the interpeduncular
+    # fossa, behind the quadrigeminal cistern
+    ra = (ax >= 3) & (Y >= -48) & (Y <= -4) & (Z >= -16) & (Z <= 2) & (d_mid <= 3.0) & (hu < 30)
+    put(ra, 41)
+    return out
+
+
+def build_anatomy_labels(hu):
     lobe, L = tal("lobe")
     cort, C = ho("cort-maxprob-thr25-1mm")
     sub, S = ho("sub-maxprob-thr25-1mm")
@@ -206,8 +315,34 @@ def build_anatomy_labels():
         out[m] = v
     out[vent] = 30
 
+    np.save(CACHE / "labels_anatomy_base.npy", out)                  # pre-CSF labels (dev aid for add_csf_labels)
+    out = add_csf_labels(out, hu)
+
     save_nifti(out, DATA / "labels_anatomy.nii.gz", np.uint8)
     return out, brain
+
+
+def csf_report(out, hu):
+    """Voxel count, median HU and MNI centroid per CSF label + CSF-path connectivity."""
+    A = grid_affine()
+    print(f"{'id':24s}{'val':>4s}{'n':>8s}{'medHU':>7s}{'p75':>6s}   centroid MNI (x,y,z)")
+    for s in structures():
+        if s["layer"] == "anatomy" and 31 <= s["labelValue"] <= 45:
+            m = out == s["labelValue"]
+            if not m.any():
+                print(f"{s['id']:24s}{s['labelValue']:4d}  MISSING"); continue
+            c = nib.affines.apply_affine(A, np.argwhere(m).mean(0))
+            print(f"{s['id']:24s}{s['labelValue']:4d}{m.sum():8d}{np.median(hu[m]):7.1f}{np.percentile(hu[m], 75):6.1f}"
+                  f"   ({c[0]:6.1f},{c[1]:6.1f},{c[2]:6.1f})")
+    for name, vals in (("ventricular path 30-33", [30, 31, 32, 33]),
+                       ("path + cisterna magna 30-33,44", [30, 31, 32, 33, 44])):
+        lab, n = ndi.label(np.isin(out, vals), structure=np.ones((3, 3, 3)))
+        sizes = np.bincount(lab.ravel())[1:]
+        print(f"connectivity {name}: {n} component(s), sizes {sorted(sizes.tolist(), reverse=True)[:6]}")
+    for v in (40, 41, 42, 43, 45):                                   # cistern contact with the CSF path
+        m = out == v
+        touch = (ndi.binary_dilation(m, structure=np.ones((3, 3, 3))) & np.isin(out, [31, 32, 33, 40, 41, 42, 43, 44, 45]) & ~m).any()
+        print(f"  cistern {v}: touches another CSF space: {bool(touch)}")
 
 
 def report(out, brain, hu):
@@ -223,6 +358,7 @@ def report(out, brain, hu):
         print(f"{s['id']:16s}{s['labelValue']:4d}{m.sum():9d}{(m & left).sum():9d}{(m & ~left).sum():9d}")
     par = np.isin(out, [1, 2, 3, 4, 6, 10, 20, 21, 22])
     vent = out == 30
+    csf_report(out, hu)
     print("brain-mask voxels", int(brain.sum()))
     print("HU in lobes/cerebellum/deep grey: median %.1f IQR %s" %
           (np.median(hu[par]), np.percentile(hu[par], [25, 75]).round(1)))
@@ -234,7 +370,7 @@ def report(out, brain, hu):
 
 def main():
     hu = build_ct()
-    out, brain = build_anatomy_labels()
+    out, brain = build_anatomy_labels(hu)
     a = nib.load(str(DATA / "ct.nii.gz")); b = nib.load(str(DATA / "labels_anatomy.nii.gz"))
     assert np.allclose(a.affine, b.affine) and a.shape == b.shape == GRID_SHAPE
     print("affine equal, shape", a.shape)

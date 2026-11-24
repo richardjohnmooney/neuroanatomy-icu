@@ -1,5 +1,12 @@
 {
-  "grid": { "shape": [182, 218, 182], "voxelMm": 1 },
+  "grid": {
+    "shape": [
+      182,
+      218,
+      182
+    ],
+    "voxelMm": 1
+  },
   "baseVolumes": [
     {
       "id": "ct",
@@ -7,15 +14,49 @@
       "modality": "CT",
       "file": "ct.nii.gz",
       "windows": [
-        { "id": "brain", "label": "Brain (W80 L40)", "width": 80, "level": 40 },
-        { "id": "stroke", "label": "Stroke (W40 L40)", "width": 40, "level": 40 },
-        { "id": "subdural", "label": "Subdural (W200 L75)", "width": 200, "level": 75 },
-        { "id": "bone", "label": "Bone (W2000 L500)", "width": 2000, "level": 500 }
+        {
+          "id": "brain",
+          "label": "Brain (W80 L40)",
+          "width": 80,
+          "level": 40
+        },
+        {
+          "id": "stroke",
+          "label": "Stroke (W40 L40)",
+          "width": 40,
+          "level": 40
+        },
+        {
+          "id": "subdural",
+          "label": "Subdural (W200 L75)",
+          "width": 200,
+          "level": 75
+        },
+        {
+          "id": "bone",
+          "label": "Bone (W2000 L500)",
+          "width": 2000,
+          "level": 500
+        }
       ],
       "attribution": "CT template: Rorden et al., Clinical Toolbox for SPM (BSD licence)"
     }
   ],
   "labelLayers": [
-    { "id": "anatomy", "label": "Anatomy", "file": "labels_anatomy.nii.gz" }
+    {
+      "id": "anatomy",
+      "label": "Anatomy",
+      "file": "labels_anatomy.nii.gz"
+    },
+    {
+      "id": "sulci",
+      "label": "Fissures & sulci",
+      "file": "labels_sulci.nii.gz"
+    },
+    {
+      "id": "dura",
+      "label": "Dura",
+      "file": "labels_dura.nii.gz"
+    }
   ]
 }

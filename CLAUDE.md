@@ -55,13 +55,13 @@ Opus (main session) owns architecture, contracts (`types.ts`, `state.ts`, manife
 ## Status / roadmap
 - [x] **Phase 1** (2026-11-25) — scaffold, pipeline (CT + 16 anatomy labels + 28 meshes), three linked panels (CT+overlay, stylised slice, 3D with slice plane/clip/explode/picking), topic tabs, info cards, About/sources. Typecheck + build pass, no console errors. Not yet committed.
 - [x] **Better lobes** (2026-11-25) — lobes rebuilt from 48 Harvard–Oxford cortical regions (`LOBE_MAP` in build_labels.py), white matter → nearest lobe per hemisphere, mode-filtered. Added corpus callosum (50) and internal capsule (51), derived geometrically before the WM fill. Check images: `pipeline/check_labels.py` → `pipeline/cache/check_*.png`.
-- [ ] Phase 2 — CSF (3rd/4th ventricles, aqueduct, cisterns), fissures & sulci, falx/tentorium.
+- [x] **Phase 2** (2026-11-25) — CSF: 3rd/4th ventricles, aqueduct, suprasellar/interpeduncular/ambient/quadrigeminal/prepontine cisterns, cisterna magna (anatomy layer 31–33, 40–45; `add_csf_labels` in build_labels.py, CT HU thresholds inside ROIs + geometric fallbacks). New layers `sulci` (interhemispheric, Sylvian, central, parieto-occipital, calcarine) and `dura` (falx, tentorium with notch) from `build_overlays.py`. Topics: CSF system, Fissures & sulci, Falx & tentorium (topics can set `plane` and `defaultHidden` groups). Check images: `pipeline/cache/check_*.png`, `check_overlay_*.png`.
 - [ ] Phase 3 — vessels (Circle of Willis, major arteries, venous sinuses), arterial territories.
 - [ ] Phase 4 — deploy to GitHub Pages (needs user OK to create repo/push).
 - [ ] Phase 5 — ICU extras: herniation syndromes, raised-ICP CT checklist, "where is the blood?", ASPECTS, EVD/ICP bolt, windowing, quiz.
 - [ ] Phase 6 — MRI (MNI152 T1/T2), modality toggle and CT↔MRI compare.
 
-Implementation notes: NiiVue 0.69 label LUT must use `max` = real max labelValue (not 255) or background takes a label colour; hidden structures = alpha 0 in the LUT. three.js imports use `three/examples/jsm/...` (not `three/addons/...`) so tsconfig `paths` resolve. 3D camera refits to the panel aspect on resize. JS bundle ~1.5 MB (NiiVue) — code-split later if load time matters.
+Implementation notes: slice viewer hover tests label layers top-down (last layer in volumes.json first). A missing layer file makes NiiVue fail to load the whole viewer (Vite serves index.html for missing files) — always build all layers listed in volumes.json. NiiVue 0.69 label LUT must use `max` = real max labelValue (not 255) or background takes a label colour; hidden structures = alpha 0 in the LUT. three.js imports use `three/examples/jsm/...` (not `three/addons/...`) so tsconfig `paths` resolve. 3D camera refits to the panel aspect on resize. JS bundle ~1.5 MB (NiiVue) — code-split later if load time matters.
 
 Backlog ideas: CT↔stylised wipe/curtain slider, sharper CT source, outline-only overlay mode, midline-shift measuring tool.
 
@@ -70,4 +70,6 @@ Backlog ideas: CT↔stylised wipe/curtain slider, sharper CT source, outline-onl
 - Brainstem divisions come from the Talairach atlas, not true landmark segmentation (pons centroid z≈−27); Talairach now only used for cerebellum/brainstem.
 - Lobe volumes: frontal 39%, temporal 19%, occipital 18% (a bit large), parietal 17% (a bit small), cingulate 5%, insula 1% — HO extents. Frontal/temporal white-matter boundary is a flat horizontal edge. L/R split by HO hemisphere labels.
 - Corpus callosum/internal capsule are geometric approximations: splenium thick, posterior limb of IC thin. Third ventricle region unlabelled (comes with CSF phase).
+- CSF spaces: template CT barely resolves cisterns, so 3rd ventricle, suprasellar and ambient are largely geometric (median HU 15–23); ambient/suprasellar oversized (~3.5 mL each); cisterna magna sits low (z≈−60) linked to the 4th ventricle by a straight 'Magendie' tube; no cerebellar tonsil label.
+- Sulci/dura are derived from atlas boundaries, not CT. Central sulcus has a gap at |x|≈18–40 on high axial slices and meets the midline at y≈−20 (real ≈−35). Sylvian fissure has no posterior limb beyond y −30. Tentorium's anterior part is a height field, not a true petrous attachment.
 - CT template is a 2 mm population average: soft, bone under-represented. A sharper CT source would help (backlog).

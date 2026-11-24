@@ -193,7 +193,8 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
   }
 
   function structureAt(mm: Vec3): Structure | null {
-    for (const lv of labelVols) {
+    // Later layers are drawn on top, so test them first.
+    for (const lv of [...labelVols].reverse()) {
       const vox = lv.vol.mm2vox(mm) as ArrayLike<number>;
       const dims = lv.vol.hdr?.dims;
       const img = lv.vol.img as unknown as ArrayLike<number> | undefined;

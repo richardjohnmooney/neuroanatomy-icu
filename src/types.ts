@@ -51,6 +51,8 @@ export interface Topic {
   name: string;
   groups: string[];       // groups visible when topic active
   focus?: Vec3;           // default crosshair, MNI mm
+  plane?: Plane;          // default plane for this topic
+  defaultHidden?: string[]; // groups listed in `groups` but switched off when the topic opens
   intro: string;          // shown in info panel when no structure selected
 }
 export interface StructuresManifest {

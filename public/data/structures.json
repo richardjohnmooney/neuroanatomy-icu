@@ -19,7 +19,19 @@
     },
     {
       "id": "csf",
-      "name": "CSF spaces"
+      "name": "Ventricles"
+    },
+    {
+      "id": "cisterns",
+      "name": "Basal cisterns"
+    },
+    {
+      "id": "sulci",
+      "name": "Fissures & sulci"
+    },
+    {
+      "id": "dura",
+      "name": "Dural folds"
     }
   ],
   "topics": [
@@ -44,14 +56,53 @@
       "name": "CSF system",
       "groups": [
         "csf",
+        "cisterns",
+        "posterior-fossa",
         "deep-grey"
       ],
       "focus": [
         0,
-        -10,
-        18
+        -14,
+        -8
       ],
-      "intro": "CSF is produced mainly by choroid plexus in the lateral ventricles and flows: lateral ventricles → foramina of Monro → third ventricle → cerebral aqueduct → fourth ventricle → foramina of Luschka and Magendie → basal cisterns and subarachnoid space → arachnoid granulations. Phase 1 shows the lateral ventricles; third/fourth ventricles and cisterns follow."
+      "intro": "CSF is made mainly by choroid plexus in the lateral ventricles and flows: lateral ventricles → foramina of Monro → third ventricle → cerebral aqueduct → fourth ventricle → foramina of Luschka and Magendie → basal cisterns → subarachnoid space over the convexities → arachnoid granulations into the venous sinuses. On an ICU CT check three things every time: ventricle size (hydrocephalus?), the basal cisterns (open or effaced?), and blood in the ventricles or cisterns. Scroll from the vertex down to the foramen magnum and follow the flow.",
+      "defaultHidden": [
+        "deep-grey"
+      ]
+    },
+    {
+      "id": "fissures",
+      "name": "Fissures & sulci",
+      "groups": [
+        "sulci",
+        "lobes"
+      ],
+      "defaultHidden": [],
+      "focus": [
+        0,
+        -20,
+        40
+      ],
+      "intro": "Fissures and sulci are the landmarks that let you name the lobes on a CT slice. The interhemispheric fissure divides the hemispheres; the Sylvian fissure separates the temporal lobe from the frontal and parietal lobes; the central sulcus divides frontal from parietal; on the medial surface the parieto-occipital sulcus separates parietal from occipital, and the calcarine sulcus lies within the occipital lobe. Sulcal effacement (sulci disappearing) is an early sign of brain swelling."
+    },
+    {
+      "id": "dura",
+      "name": "Falx & tentorium",
+      "groups": [
+        "dura",
+        "posterior-fossa",
+        "lobes"
+      ],
+      "defaultHidden": [
+        "lobes"
+      ],
+      "focus": [
+        0,
+        -55,
+        5
+      ],
+      "plane": "coronal",
+      "intro": "The dura forms two rigid sheets that divide the cranial cavity: the falx cerebri between the hemispheres and the tentorium cerebelli between the cerebrum and cerebellum. Because the skull and these folds cannot stretch, a mass pushes brain past their free edges — herniation. Supratentorial masses herniate under the falx (subfalcine) or down through the tentorial notch (uncal/central); posterior fossa masses push up through the notch or down through the foramen magnum. Try the coronal view, and the 3D model with the lobes hidden."
     }
   ],
   "structures": [
@@ -319,6 +370,235 @@
       "lateralised": true,
       "notes": "Paired C-shaped cavities: frontal horn, body, atrium (trigone), occipital horn and temporal horn. Each drains through its foramen of Monro into the third ventricle. Choroid plexus in the atrium often calcifies. EVDs are aimed at the frontal horn just anterior to the foramen of Monro.",
       "ctNotes": "Early hydrocephalus: rounded frontal horns and temporal horns wider than ~2 mm. Midline shift: measure the septum pellucidum's displacement from the midline."
+    },
+    {
+      "id": "third-ventricle",
+      "name": "Third ventricle",
+      "group": "csf",
+      "layer": "anatomy",
+      "labelValue": 31,
+      "color": "#1f6fff",
+      "meshes": [
+        "third-ventricle.glb"
+      ],
+      "lateralised": false,
+      "notes": "Slit-like midline cavity between the two thalami. Receives CSF from both lateral ventricles through the foramina of Monro and drains through the cerebral aqueduct. Its floor (hypothalamus, mammillary bodies) is opened in endoscopic third ventriculostomy.",
+      "ctNotes": "Normally a thin slit. A rounded, ballooned third ventricle suggests obstruction at or below the aqueduct. A colloid cyst at the foramina of Monro can cause sudden obstructive hydrocephalus."
+    },
+    {
+      "id": "cerebral-aqueduct",
+      "name": "Cerebral aqueduct",
+      "group": "csf",
+      "layer": "anatomy",
+      "labelValue": 32,
+      "color": "#00e0ff",
+      "meshes": [
+        "cerebral-aqueduct.glb"
+      ],
+      "lateralised": false,
+      "notes": "Narrow channel (about 1–2 mm) through the midbrain joining the third and fourth ventricles. The narrowest point of the ventricular system, so it blocks easily: aqueduct stenosis, tectal tumours, or clot from intraventricular haemorrhage.",
+      "ctNotes": "Seen as a dot of CSF in the midbrain behind the cerebral peduncles. Dilated lateral and third ventricles with a normal fourth ventricle point to an aqueduct block."
+    },
+    {
+      "id": "fourth-ventricle",
+      "name": "Fourth ventricle",
+      "group": "csf",
+      "layer": "anatomy",
+      "labelValue": 33,
+      "color": "#4a5bff",
+      "meshes": [
+        "fourth-ventricle.glb"
+      ],
+      "lateralised": false,
+      "notes": "Tent-shaped cavity between the pons/medulla in front and the cerebellum behind. Drains through the midline foramen of Magendie and paired lateral foramina of Luschka into the cisterna magna and cerebellopontine angles.",
+      "ctNotes": "Should be an open midline 'horseshoe' shape. Effacement or displacement from a cerebellar mass, infarct or haemorrhage is a neurosurgical emergency: risk of obstructive hydrocephalus and brainstem compression."
+    },
+    {
+      "id": "suprasellar-cistern",
+      "name": "Suprasellar cistern",
+      "group": "cisterns",
+      "layer": "anatomy",
+      "labelValue": 40,
+      "color": "#00e5c3",
+      "meshes": [
+        "suprasellar-cistern.glb"
+      ],
+      "lateralised": false,
+      "notes": "Star- or pentagon-shaped CSF space above the pituitary fossa containing the optic chiasm, pituitary stalk and the circle of Willis. The commonest place to see blood in aneurysmal subarachnoid haemorrhage.",
+      "ctNotes": "Look for the five- or six-pointed star on axial slices at the level of the midbrain. Hyperdense blood filling it means SAH; loss of the star (effacement) is a sign of raised ICP or uncal herniation."
+    },
+    {
+      "id": "interpeduncular-cistern",
+      "name": "Interpeduncular cistern",
+      "group": "cisterns",
+      "layer": "anatomy",
+      "labelValue": 45,
+      "color": "#8ee6ff",
+      "meshes": [
+        "interpeduncular-cistern.glb"
+      ],
+      "lateralised": false,
+      "notes": "Small CSF space between the cerebral peduncles at the front of the midbrain, behind the suprasellar cistern. Contains the basilar tip and the origins of CN III.",
+      "ctNotes": "A small dependent pocket where a little subarachnoid blood can collect — always check it, especially in subtle or late-presenting SAH."
+    },
+    {
+      "id": "ambient-cistern",
+      "name": "Ambient cistern",
+      "group": "cisterns",
+      "layer": "anatomy",
+      "labelValue": 41,
+      "color": "#6f8cff",
+      "meshes": [
+        "ambient-cistern_L.glb",
+        "ambient-cistern_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Thin CSF wings wrapping around the sides of the midbrain, linking the interpeduncular cistern in front to the quadrigeminal cistern behind. Contain the PCA, superior cerebellar artery and basal vein.",
+      "ctNotes": "With the quadrigeminal cistern these form the perimesencephalic cisterns. Asymmetric narrowing suggests uncal herniation on that side; complete effacement suggests severe raised ICP. Blood confined here may be non-aneurysmal perimesencephalic SAH."
+    },
+    {
+      "id": "quadrigeminal-cistern",
+      "name": "Quadrigeminal cistern",
+      "group": "cisterns",
+      "layer": "anatomy",
+      "labelValue": 42,
+      "color": "#b28dff",
+      "meshes": [
+        "quadrigeminal-cistern.glb"
+      ],
+      "lateralised": false,
+      "notes": "CSF space behind the midbrain tectum (colliculi), beneath the splenium of the corpus callosum. Contains the vein of Galen; the pineal gland sits at its front.",
+      "ctNotes": "Forms the 'smile' behind the midbrain on axial CT. Loss of the smile is a key raised-ICP / downward herniation sign. A common site for layering IVH or SAH."
+    },
+    {
+      "id": "prepontine-cistern",
+      "name": "Prepontine cistern",
+      "group": "cisterns",
+      "layer": "anatomy",
+      "labelValue": 43,
+      "color": "#00b3ff",
+      "meshes": [
+        "prepontine-cistern.glb"
+      ],
+      "lateralised": false,
+      "notes": "CSF space between the clivus and the front of the pons, containing the basilar artery and CN VI.",
+      "ctNotes": "Look for a hyperdense basilar artery (thrombosis) or blood here. Effacement occurs with posterior fossa mass effect."
+    },
+    {
+      "id": "cisterna-magna",
+      "name": "Cisterna magna",
+      "group": "cisterns",
+      "layer": "anatomy",
+      "labelValue": 44,
+      "color": "#4dd2a6",
+      "meshes": [
+        "cisterna-magna.glb"
+      ],
+      "lateralised": false,
+      "notes": "Largest cistern, behind the medulla and below the cerebellum, just above the foramen magnum. Receives CSF from the fourth ventricle via the foramen of Magendie.",
+      "ctNotes": "Effacement, with the cerebellar tonsils crowding the foramen magnum, is the CT clue to tonsillar herniation. Its size varies a lot between people (a large one is usually normal)."
+    },
+    {
+      "id": "interhemispheric-fissure",
+      "name": "Interhemispheric fissure",
+      "group": "sulci",
+      "layer": "sulci",
+      "labelValue": 1,
+      "color": "#ff4fd8",
+      "meshes": [
+        "interhemispheric-fissure.glb"
+      ],
+      "lateralised": false,
+      "notes": "Deep midline cleft (longitudinal fissure) separating the two cerebral hemispheres, occupied by the falx cerebri. Below the falx's free edge the hemispheres are joined by the corpus callosum.",
+      "ctNotes": "Judge midline shift against the fissure and falx. A dense falx with blood tracking along it suggests an interhemispheric subdural haematoma; blood within the anterior fissure suggests anterior communicating artery aneurysm SAH."
+    },
+    {
+      "id": "sylvian-fissure",
+      "name": "Sylvian (lateral) fissure",
+      "group": "sulci",
+      "layer": "sulci",
+      "labelValue": 2,
+      "color": "#ffd400",
+      "meshes": [
+        "sylvian-fissure_L.glb",
+        "sylvian-fissure_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Deep fissure separating the temporal lobe below from the frontal and parietal lobes above, with the insula at its depth. The MCA and its branches run through it.",
+      "ctNotes": "Effacement of one Sylvian fissure is an early sign of swelling (e.g. MCA infarct). Blood here suggests MCA aneurysm SAH. Widened fissures are seen with atrophy."
+    },
+    {
+      "id": "central-sulcus",
+      "name": "Central sulcus",
+      "group": "sulci",
+      "layer": "sulci",
+      "labelValue": 3,
+      "color": "#ff6b3d",
+      "meshes": [
+        "central-sulcus_L.glb",
+        "central-sulcus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Separates the frontal lobe (precentral gyrus — primary motor cortex) from the parietal lobe (postcentral gyrus — primary sensory cortex). Runs from the vertex downwards and forwards, almost reaching the Sylvian fissure.",
+      "ctNotes": "On high axial slices, find the superior frontal sulcus running front-to-back; it ends by meeting the precentral sulcus at a right angle. The central sulcus is the next sulcus behind that. The precentral gyrus is thicker than the postcentral, and the 'hand knob' (an omega-shaped bulge of precentral gyrus) points backwards into it."
+    },
+    {
+      "id": "parieto-occipital-sulcus",
+      "name": "Parieto-occipital sulcus",
+      "group": "sulci",
+      "layer": "sulci",
+      "labelValue": 4,
+      "color": "#7cfc00",
+      "meshes": [
+        "parieto-occipital-sulcus_L.glb",
+        "parieto-occipital-sulcus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Deep sulcus on the medial surface separating the parietal lobe (precuneus) from the occipital lobe (cuneus). Joins the calcarine sulcus to form a 'Y' on a midline sagittal view.",
+      "ctNotes": "Best seen on sagittal reformats; on axial slices it runs obliquely backwards on the medial surface, marking the parietal–occipital boundary."
+    },
+    {
+      "id": "calcarine-sulcus",
+      "name": "Calcarine sulcus",
+      "group": "sulci",
+      "layer": "sulci",
+      "labelValue": 5,
+      "color": "#00ffd5",
+      "meshes": [
+        "calcarine-sulcus_L.glb",
+        "calcarine-sulcus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Horizontal sulcus on the medial occipital lobe, lined by primary visual cortex. The upper bank represents the lower visual field and vice versa.",
+      "ctNotes": "Occipital (PCA) infarction involving the calcarine cortex causes a contralateral homonymous hemianopia — easily missed in a sedated patient."
+    },
+    {
+      "id": "falx-cerebri",
+      "name": "Falx cerebri",
+      "group": "dura",
+      "layer": "dura",
+      "labelValue": 1,
+      "color": "#e9d8a6",
+      "meshes": [
+        "falx-cerebri.glb"
+      ],
+      "lateralised": false,
+      "notes": "Sickle-shaped fold of dura in the interhemispheric fissure, from the crista galli in front to the tentorium behind. Its attached upper border carries the superior sagittal sinus and its free lower edge the inferior sagittal sinus. It joins the tentorium along the straight sinus.",
+      "ctNotes": "Normally faintly dense and often calcified with age (not blood). Subfalcine herniation: the cingulate gyrus slides under the free edge, displacing the septum pellucidum; measure midline shift at the foramina of Monro. A thickened, dense falx may be an interhemispheric subdural."
+    },
+    {
+      "id": "tentorium-cerebelli",
+      "name": "Tentorium cerebelli",
+      "group": "dura",
+      "layer": "dura",
+      "labelValue": 2,
+      "color": "#d4a373",
+      "meshes": [
+        "tentorium-cerebelli.glb"
+      ],
+      "lateralised": false,
+      "notes": "Tent-shaped fold of dura roofing the posterior fossa, separating the occipital and temporal lobes above (supratentorial) from the cerebellum below (infratentorial). Its free medial edge bounds the tentorial notch (incisura), through which the midbrain passes. The transverse sinuses run in its attached edge and the straight sinus where it meets the falx.",
+      "ctNotes": "The supra/infratentorial division underpins herniation: uncal and central (transtentorial) herniation down through the notch, and upward herniation from posterior fossa masses. Subdural blood along the tentorium appears as a dense sloping band on axial slices and is clearer on coronal reformats."
     }
   ]
 }
