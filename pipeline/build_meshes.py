@@ -35,7 +35,9 @@ def mask_to_mesh(mask, affine, sigma=0.8):
 
 
 # Per-layer Gaussian sigma before marching cubes (thin sheets like dura/sulci need less smoothing).
-SIGMA = {"anatomy": 0.8, "sulci": 0.6, "dura": 0.6}
+SIGMA = {"anatomy": 0.8, "sulci": 0.6, "dura": 0.6, "territories": 0.8}
+# Layers whose meshes are written by their own builder (e.g. smooth tubes from centrelines).
+SELF_MESHED = {"vessels"}
 
 
 def build_layer(layer, label_file):
@@ -66,6 +68,8 @@ def main():
     vols = json.loads((DATA / "volumes.json").read_text(encoding="utf8"))
     out = []
     for L in vols["labelLayers"]:
+        if L["id"] in SELF_MESHED:
+            continue
         if (DATA / L["file"]).exists():
             out += build_layer(L["id"], L["file"])
         else:

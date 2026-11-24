@@ -49,6 +49,11 @@
       "file": "labels_anatomy.nii.gz"
     },
     {
+      "id": "territories",
+      "label": "Arterial territories",
+      "file": "labels_territories.nii.gz"
+    },
+    {
       "id": "sulci",
       "label": "Fissures & sulci",
       "file": "labels_sulci.nii.gz"
@@ -57,6 +62,11 @@
       "id": "dura",
       "label": "Dura",
       "file": "labels_dura.nii.gz"
+    },
+    {
+      "id": "vessels",
+      "label": "Vessels",
+      "file": "labels_vessels.nii.gz"
     }
   ]
 }

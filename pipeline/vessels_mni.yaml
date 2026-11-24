@@ -1,0 +1,121 @@
+# Hand-authored vessel centrelines in MNI152 world mm (RAS: +x = patient right).
+# Each vessel: structure id (from structures.json), radius in mm, and one or more polylines.
+# Lateralised vessels are written for the RIGHT side (+x) and mirrored (x -> -x) for the left
+# when `mirror: true`. Coordinates are approximate teaching positions, tuned to sit in the
+# CSF spaces of this template (suprasellar/ambient/prepontine cisterns, Sylvian fissure).
+# Sinus paths are FALLBACKS: build_vessels.py should prefer deriving them from the dura labels
+# (falx attached/free edges, tentorium attached edge) and only use these if derivation fails.
+
+arteries:
+  - id: internal-carotid-artery
+    mirror: true
+    radius: 2.0
+    paths:
+      # petrous (from carotid canal) -> cavernous (alongside sella) -> siphon -> supraclinoid -> terminus
+      - [[25, -12, -42], [21, -6, -36], [17, -2, -32], [15, 4, -30], [15, 10, -27], [14, 14, -22], [13, 9, -17], [13, 3, -14]]
+
+  - id: middle-cerebral-artery
+    mirror: true
+    radius: 1.5
+    paths:
+      # M1 horizontal to limen insulae
+      - [[13, 3, -14], [20, 4, -13], [28, 5, -11], [35, 4, -8]]
+      # M2 superior trunk over insula then out of Sylvian fissure (frontal/parietal branches)
+      - [[35, 4, -8], [38, 0, -1], [40, -8, 8], [44, -18, 18], [50, -28, 28]]
+      # M2 inferior trunk (temporal/posterior branches)
+      - [[35, 4, -8], [40, -4, -5], [46, -18, -2], [51, -34, 2], [52, -48, 8]]
+
+  - id: anterior-cerebral-artery
+    mirror: true
+    radius: 1.1
+    paths:
+      # A1 medially to ACom, A2 up in front of lamina terminalis, pericallosal around genu and along callosum
+      - [[13, 3, -14], [9, 10, -12], [4, 17, -9], [2, 20, -7], [3, 26, -2], [3, 33, 6], [3, 34, 16], [3, 28, 25], [3, 15, 31], [3, 0, 34], [3, -15, 34], [3, -30, 30]]
+
+  - id: anterior-communicating-artery
+    mirror: false
+    radius: 0.8
+    paths:
+      - [[-2, 20, -7], [0, 20.5, -7], [2, 20, -7]]
+
+  - id: posterior-communicating-artery
+    mirror: true
+    radius: 0.7
+    paths:
+      - [[13, 3, -14], [12, -2, -14], [10, -8, -13], [9, -13, -12]]
+
+  - id: posterior-cerebral-artery
+    mirror: true
+    radius: 1.1
+    paths:
+      # P1 from basilar tip, P2 around midbrain in ambient cistern, P3/P4 to calcarine
+      - [[0, -13, -13], [5, -13, -13], [9, -13, -12], [15, -19, -11], [15, -27, -8], [12, -36, -4], [9, -46, -4], [8, -60, 0], [8, -72, 3], [7, -84, 5]]
+
+  - id: basilar-artery
+    mirror: false
+    radius: 1.6
+    paths:
+      # vertebrobasilar junction (pontomedullary junction) up the front of the pons to the tip
+      - [[0, -19, -46], [0, -16, -38], [0, -14, -30], [0, -13, -22], [0, -13, -13]]
+
+  - id: vertebral-artery
+    mirror: true
+    radius: 1.4
+    paths:
+      # from foramen magnum, curving anteromedially around the medulla
+      - [[11, -36, -66], [10, -30, -58], [7, -24, -52], [3, -20, -48], [0, -19, -46]]
+
+veins:
+  - id: superior-sagittal-sinus
+    mirror: false
+    radius: 3.0
+    derive: falx_attached_edge
+    paths:
+      - [[0, 62, 10], [0, 58, 40], [0, 40, 62], [0, 10, 74], [0, -25, 74], [0, -60, 60], [0, -85, 35], [0, -100, 10], [0, -102, 0]]
+
+  - id: inferior-sagittal-sinus
+    mirror: false
+    radius: 1.2
+    derive: falx_free_edge_anterior_two_thirds
+    paths:
+      - [[0, 30, 30], [0, 10, 36], [0, -15, 35], [0, -35, 25], [0, -42, 14]]
+
+  - id: deep-cerebral-veins
+    mirror: false
+    radius: 1.3
+    paths:
+      # paired internal cerebral veins along the roof of the third ventricle -> vein of Galen behind the splenium
+      - [[3, -2, 14], [2.5, -15, 15], [2, -28, 13], [0.5, -36, 9]]
+      - [[-3, -2, 14], [-2.5, -15, 15], [-2, -28, 13], [-0.5, -36, 9]]
+      - [[0, -36, 9], [0, -41, 7], [0, -45, 10]]
+
+  - id: straight-sinus
+    mirror: false
+    radius: 2.0
+    derive: falx_tentorium_junction
+    paths:
+      - [[0, -45, 10], [0, -60, 5], [0, -75, 2], [0, -90, 0], [0, -100, 0]]
+
+  - id: confluence-of-sinuses
+    mirror: false
+    radius: 4.0
+    paths:
+      - [[0, -101, 0], [0, -102, -1]]
+
+  - id: transverse-sinus
+    mirror: true
+    radius: 2.8
+    derive: tentorium_attached_edge
+    paths:
+      - [[0, -102, 0], [15, -100, -3], [30, -90, -8], [40, -76, -14], [45, -62, -20]]
+
+  - id: sigmoid-sinus
+    mirror: true
+    radius: 2.6
+    paths:
+      - [[45, -62, -20], [44, -52, -28], [41, -42, -36], [37, -34, -44], [33, -28, -50]]
+
+  - id: cavernous-sinus
+    mirror: true
+    radius: 0  # volumetric, not a tube: box around the cavernous ICA lateral to the sella
+    box: {x: [8, 19], y: [-8, 14], z: [-37, -25]}

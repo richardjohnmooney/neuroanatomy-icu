@@ -32,6 +32,18 @@
     {
       "id": "dura",
       "name": "Dural folds"
+    },
+    {
+      "id": "arteries",
+      "name": "Arteries"
+    },
+    {
+      "id": "veins",
+      "name": "Veins & sinuses"
+    },
+    {
+      "id": "territories",
+      "name": "Arterial territories"
     }
   ],
   "topics": [
@@ -103,6 +115,27 @@
       ],
       "plane": "coronal",
       "intro": "The dura forms two rigid sheets that divide the cranial cavity: the falx cerebri between the hemispheres and the tentorium cerebelli between the cerebrum and cerebellum. Because the skull and these folds cannot stretch, a mass pushes brain past their free edges — herniation. Supratentorial masses herniate under the falx (subfalcine) or down through the tentorial notch (uncal/central); posterior fossa masses push up through the notch or down through the foramen magnum. Try the coronal view, and the 3D model with the lobes hidden."
+    },
+    {
+      "id": "vessels",
+      "name": "Vessels",
+      "groups": [
+        "arteries",
+        "veins",
+        "territories",
+        "lobes"
+      ],
+      "defaultHidden": [
+        "territories",
+        "lobes"
+      ],
+      "focus": [
+        0,
+        -2,
+        -12
+      ],
+      "plane": "axial",
+      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. Switch on 'Arterial territories' to see which territory a hypodensity belongs to."
     }
   ],
   "structures": [
@@ -599,6 +632,312 @@
       "lateralised": false,
       "notes": "Tent-shaped fold of dura roofing the posterior fossa, separating the occipital and temporal lobes above (supratentorial) from the cerebellum below (infratentorial). Its free medial edge bounds the tentorial notch (incisura), through which the midbrain passes. The transverse sinuses run in its attached edge and the straight sinus where it meets the falx.",
       "ctNotes": "The supra/infratentorial division underpins herniation: uncal and central (transtentorial) herniation down through the notch, and upward herniation from posterior fossa masses. Subdural blood along the tentorium appears as a dense sloping band on axial slices and is clearer on coronal reformats."
+    },
+    {
+      "id": "internal-carotid-artery",
+      "name": "Internal carotid artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 1,
+      "color": "#e63946",
+      "meshes": [
+        "internal-carotid-artery_L.glb",
+        "internal-carotid-artery_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Enters the skull through the carotid canal, runs through the cavernous sinus beside the sella (the carotid siphon), then pierces the dura and divides into the MCA and ACA after giving off the ophthalmic, posterior communicating and anterior choroidal arteries.",
+      "ctNotes": "Calcification of the cavernous/siphon segment is common and dense on CT. A carotid–cavernous fistula after trauma presents with pulsatile proptosis and a dilated superior ophthalmic vein."
+    },
+    {
+      "id": "middle-cerebral-artery",
+      "name": "Middle cerebral artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 2,
+      "color": "#ff6b6b",
+      "meshes": [
+        "middle-cerebral-artery_L.glb",
+        "middle-cerebral-artery_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "The largest branch of the ICA. M1 runs laterally to the limen insulae, giving the lenticulostriate arteries to the basal ganglia and internal capsule; M2 branches run over the insula and out of the Sylvian fissure to supply most of the lateral convexity.",
+      "ctNotes": "Hyperdense MCA sign (bright clot in M1) or 'dot sign' (clot in an M2 branch in the Sylvian fissure) on non-contrast CT in acute stroke. Compare with the other side and look for early ischaemic change in the MCA territory (ASPECTS)."
+    },
+    {
+      "id": "anterior-cerebral-artery",
+      "name": "Anterior cerebral artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 3,
+      "color": "#ff8fab",
+      "meshes": [
+        "anterior-cerebral-artery_L.glb",
+        "anterior-cerebral-artery_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "A1 runs medially above the optic chiasm to the anterior communicating artery; A2 ascends in the interhemispheric fissure in front of the lamina terminalis and curves around the genu as the pericallosal artery, supplying the medial frontal and parietal lobes.",
+      "ctNotes": "ACA infarcts affect the leg more than the arm. In subfalcine herniation the ACAs can be compressed against the falx causing secondary infarction."
+    },
+    {
+      "id": "anterior-communicating-artery",
+      "name": "Anterior communicating artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 4,
+      "color": "#ffc2d1",
+      "meshes": [
+        "anterior-communicating-artery.glb"
+      ],
+      "lateralised": false,
+      "notes": "Short midline vessel joining the two A1 segments, completing the front of the circle of Willis. The commonest site of intracranial aneurysm (about 30–35%).",
+      "ctNotes": "ACom aneurysm rupture classically puts blood in the interhemispheric fissure, suprasellar cistern and sometimes the frontal lobe (gyrus rectus) or septum."
+    },
+    {
+      "id": "posterior-communicating-artery",
+      "name": "Posterior communicating artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 5,
+      "color": "#f4a261",
+      "meshes": [
+        "posterior-communicating-artery_L.glb",
+        "posterior-communicating-artery_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Joins the ICA to the PCA on each side, linking anterior and posterior circulations. Runs just above and medial to CN III.",
+      "ctNotes": "A PCom aneurysm can compress CN III, causing a painful 'surgical' third nerve palsy with a dilated pupil — the same pupil sign as uncal herniation, so look at both the cisterns and the vessels."
+    },
+    {
+      "id": "posterior-cerebral-artery",
+      "name": "Posterior cerebral artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 6,
+      "color": "#e76f51",
+      "meshes": [
+        "posterior-cerebral-artery_L.glb",
+        "posterior-cerebral-artery_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Terminal branches of the basilar. P1 runs to the PCom junction, P2 wraps around the midbrain in the ambient cistern, then branches supply the occipital lobe (calcarine), inferomedial temporal lobe and thalamus (thalamoperforators).",
+      "ctNotes": "Compressed against the tentorial edge in transtentorial herniation, causing occipital infarction. PCA infarcts give a contralateral homonymous hemianopia."
+    },
+    {
+      "id": "basilar-artery",
+      "name": "Basilar artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 7,
+      "color": "#c1121f",
+      "meshes": [
+        "basilar-artery.glb"
+      ],
+      "lateralised": false,
+      "notes": "Formed by the two vertebral arteries at the pontomedullary junction, runs up the front of the pons in the prepontine cistern and ends at the interpeduncular cistern by dividing into the two PCAs. Supplies the pons via perforators and the cerebellum via AICA and SCA.",
+      "ctNotes": "A hyperdense basilar artery in the prepontine cistern may be the only CT sign of basilar thrombosis — consider it in any unexplained coma, and get a CTA."
+    },
+    {
+      "id": "vertebral-artery",
+      "name": "Vertebral artery",
+      "group": "arteries",
+      "layer": "vessels",
+      "labelValue": 8,
+      "color": "#9d0208",
+      "meshes": [
+        "vertebral-artery_L.glb",
+        "vertebral-artery_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Ascends through the transverse foramina of C6–C1, pierces the dura at the foramen magnum and runs around the medulla to join its partner as the basilar. Gives off PICA, supplying the lateral medulla and inferior cerebellum.",
+      "ctNotes": "Vertebral dissection (neck trauma, manipulation) is an important cause of posterior circulation stroke in younger patients; intradural dissection can cause SAH."
+    },
+    {
+      "id": "superior-sagittal-sinus",
+      "name": "Superior sagittal sinus",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 20,
+      "color": "#3a86ff",
+      "meshes": [
+        "superior-sagittal-sinus.glb"
+      ],
+      "lateralised": false,
+      "notes": "Runs in the attached upper border of the falx from the crista galli to the confluence of sinuses. Receives superficial cortical veins and most CSF via arachnoid granulations.",
+      "ctNotes": "Venous sinus thrombosis: a dense sinus on non-contrast CT ('dense triangle' / cord sign) and, after contrast, an 'empty delta' sign. Suspect it in headache with raised ICP, seizures, or haemorrhagic infarcts not fitting an arterial territory — especially parasagittal."
+    },
+    {
+      "id": "inferior-sagittal-sinus",
+      "name": "Inferior sagittal sinus",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 21,
+      "color": "#5e60ce",
+      "meshes": [
+        "inferior-sagittal-sinus.glb"
+      ],
+      "lateralised": false,
+      "notes": "Small sinus in the free lower edge of the falx, joining the great cerebral vein (of Galen) to form the straight sinus."
+    },
+    {
+      "id": "deep-cerebral-veins",
+      "name": "Internal cerebral veins & vein of Galen",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 26,
+      "color": "#7209b7",
+      "meshes": [
+        "deep-cerebral-veins.glb"
+      ],
+      "lateralised": false,
+      "notes": "Paired internal cerebral veins run back along the roof of the third ventricle, joining behind the splenium as the great cerebral vein of Galen, which drains the deep grey matter (thalami, basal ganglia) into the straight sinus.",
+      "ctNotes": "Deep venous thrombosis causes bilateral thalamic oedema or haemorrhage and reduced consciousness — easily mistaken for other causes of coma. Look for dense internal cerebral veins and straight sinus."
+    },
+    {
+      "id": "straight-sinus",
+      "name": "Straight sinus",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 22,
+      "color": "#4361ee",
+      "meshes": [
+        "straight-sinus.glb"
+      ],
+      "lateralised": false,
+      "notes": "Runs along the junction of the falx and tentorium, from the vein of Galen to the confluence of sinuses, carrying deep venous blood."
+    },
+    {
+      "id": "confluence-of-sinuses",
+      "name": "Confluence of sinuses (torcula)",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 23,
+      "color": "#4895ef",
+      "meshes": [
+        "confluence-of-sinuses.glb"
+      ],
+      "lateralised": false,
+      "notes": "Meeting point of the superior sagittal, straight and transverse sinuses at the internal occipital protuberance.",
+      "ctNotes": "The posterior sinuses are naturally slightly dense on CT; compare with arteries and look for asymmetry or expansion before calling thrombosis."
+    },
+    {
+      "id": "transverse-sinus",
+      "name": "Transverse sinus",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 24,
+      "color": "#4cc9f0",
+      "meshes": [
+        "transverse-sinus_L.glb",
+        "transverse-sinus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Runs laterally in the attached edge of the tentorium from the confluence to the petrous temporal bone. The right is usually dominant; hypoplasia of one side (usually the left) is a common normal variant.",
+      "ctNotes": "A hypoplastic transverse sinus can mimic thrombosis — check for a dense clot or expanded sinus, and the sigmoid/jugular below."
+    },
+    {
+      "id": "sigmoid-sinus",
+      "name": "Sigmoid sinus",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 25,
+      "color": "#56cfe1",
+      "meshes": [
+        "sigmoid-sinus_L.glb",
+        "sigmoid-sinus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "S-shaped continuation of the transverse sinus grooving the mastoid part of the temporal bone, draining into the internal jugular vein at the jugular foramen.",
+      "ctNotes": "Mastoiditis can cause sigmoid sinus thrombosis. Sigmoid/jugular compression is one reason ICU patients are nursed head-up with the neck neutral and ETT ties not too tight."
+    },
+    {
+      "id": "cavernous-sinus",
+      "name": "Cavernous sinus",
+      "group": "veins",
+      "layer": "vessels",
+      "labelValue": 27,
+      "color": "#6a4c93",
+      "meshes": [
+        "cavernous-sinus_L.glb",
+        "cavernous-sinus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Paired venous spaces either side of the pituitary fossa. Contain the ICA and CN VI, with CN III, IV, V1 and V2 in the lateral wall. Drain the orbits via the ophthalmic veins.",
+      "ctNotes": "Cavernous sinus thrombosis (spread from facial or sinus infection) causes proptosis, ophthalmoplegia and sepsis. Contains the carotid siphon — origin of carotid–cavernous fistula."
+    },
+    {
+      "id": "aca-territory",
+      "name": "ACA territory",
+      "group": "territories",
+      "layer": "territories",
+      "labelValue": 1,
+      "color": "#90be6d",
+      "meshes": [
+        "aca-territory_L.glb",
+        "aca-territory_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Medial surface of the frontal and parietal lobes (paracentral lobule — leg area) and the anterior corpus callosum, plus a strip over the superior convexity.",
+      "ctNotes": "ACA infarction: hypodensity along the medial frontal/parietal cortex. Contralateral leg weakness more than arm; abulia if bilateral."
+    },
+    {
+      "id": "mca-territory",
+      "name": "MCA territory",
+      "group": "territories",
+      "layer": "territories",
+      "labelValue": 2,
+      "color": "#f9c74f",
+      "meshes": [
+        "mca-territory_L.glb",
+        "mca-territory_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Most of the lateral convexity of the frontal, parietal and temporal lobes, including the insula, the motor and sensory face/arm areas, and language areas on the dominant side.",
+      "ctNotes": "The commonest large-vessel stroke. Early CT signs: loss of the insular ribbon, obscured lentiform nucleus, sulcal effacement, hyperdense MCA. Malignant MCA infarction swells over 2–5 days and may need decompressive craniectomy."
+    },
+    {
+      "id": "lenticulostriate-territory",
+      "name": "Lenticulostriate (deep MCA) territory",
+      "group": "territories",
+      "layer": "territories",
+      "labelValue": 3,
+      "color": "#f94144",
+      "meshes": [
+        "lenticulostriate-territory_L.glb",
+        "lenticulostriate-territory_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Basal ganglia and internal capsule supplied by small perforators from M1 (and the recurrent artery of Heubner from the ACA). End arteries prone to lipohyalinosis.",
+      "ctNotes": "Lacunar infarcts and hypertensive haemorrhage (putamen) occur here; a small lesion in the posterior limb of the internal capsule causes a dense pure motor hemiplegia."
+    },
+    {
+      "id": "pca-territory",
+      "name": "PCA territory",
+      "group": "territories",
+      "layer": "territories",
+      "labelValue": 4,
+      "color": "#f8961e",
+      "meshes": [
+        "pca-territory_L.glb",
+        "pca-territory_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Occipital lobe, inferomedial temporal lobe (including hippocampus) and, via perforators, much of the thalamus and midbrain.",
+      "ctNotes": "PCA infarction: occipital hypodensity, homonymous hemianopia; thalamic involvement can reduce consciousness. Secondary PCA infarction follows transtentorial herniation."
+    },
+    {
+      "id": "vertebrobasilar-territory",
+      "name": "Vertebrobasilar territory (brainstem & cerebellum)",
+      "group": "territories",
+      "layer": "territories",
+      "labelValue": 5,
+      "color": "#577590",
+      "meshes": [
+        "vertebrobasilar-territory_L.glb",
+        "vertebrobasilar-territory_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Brainstem and cerebellum, supplied by the vertebral arteries (PICA), the basilar artery (perforators, AICA) and the superior cerebellar arteries.",
+      "ctNotes": "Posterior circulation strokes are easily missed on CT (beam hardening). Cerebellar infarcts can swell and cause obstructive hydrocephalus or brainstem compression in the first few days — watch GCS closely."
     }
   ]
 }

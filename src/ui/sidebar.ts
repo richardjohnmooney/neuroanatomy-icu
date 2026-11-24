@@ -37,7 +37,7 @@ export function applyTopic(data: AppData, topicId: string): void {
 
 function initTabs(data: AppData): void {
   const nav = $('topic-tabs');
-  const planned = ['Vessels', 'Herniation', 'Raised ICP'];
+  const planned = ['Herniation', 'Raised ICP'];
   for (const t of data.manifest.topics) {
     const b = document.createElement('button');
     b.type = 'button';

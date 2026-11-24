@@ -12,6 +12,7 @@ dependencies = [
     "requests",
     "fast-simplification>=0.2.0",
     "matplotlib>=3.11.2",
+    "pyyaml",
 ]
 [tool.uv]
 package = false
