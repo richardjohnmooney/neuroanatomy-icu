@@ -15,6 +15,7 @@ export interface AppState {
   clip3d: boolean;              // cut 3D model at the crosshair plane
   explode: number;              // 0..1 explode lobes in 3D
   radiological: boolean;        // true: patient left on screen right (CT convention)
+  vesselSlab: number;           // mm either side of the slice from which vessels are projected (0 = exact slice)
 }
 
 type Listener = (s: AppState, changed: Set<keyof AppState>) => void;
@@ -35,6 +36,7 @@ export const state: AppState = {
   clip3d: true,
   explode: 0,
   radiological: true,
+  vesselSlab: 3,
 };
 
 /** Merge a patch and notify. Pass `source` to let the originating panel skip its own echo. */

@@ -77,6 +77,12 @@ select {
 }
 .panel-block.grow { flex: 1; min-height: 0; }
 .row { display: flex; flex-direction: column; gap: 3px; margin: 8px 0; font-size: 13px; color: var(--muted); }
+.row .value { color: var(--text); font-weight: 600; }
+.topbar-right { display: flex; gap: 6px; }
+
+/* Collapsible teaching notes pane */
+body.notes-collapsed .info { display: none; }
+body.notes-collapsed .workspace { grid-template-columns: 230px 1fr; }
 .check { display: flex; gap: 6px; align-items: center; margin: 6px 0; font-size: 13px; }
 .seg { display: flex; }
 .seg button { flex: 1; border-radius: 0; padding: 4px 0; font-size: 12px; }
@@ -140,7 +146,7 @@ dialog::backdrop { background: #000a; }
 
 /* Narrow screens: stack panels */
 @media (max-width: 1100px) {
-  .workspace { grid-template-columns: 200px 1fr; }
+  .workspace, body.notes-collapsed .workspace { grid-template-columns: 200px 1fr; }
   .info { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--border); max-height: 30vh; }
   .viewers[data-count="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
   .viewers[data-count="3"] #viewer-3d { grid-column: 1 / -1; }

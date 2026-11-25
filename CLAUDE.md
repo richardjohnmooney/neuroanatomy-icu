@@ -34,6 +34,8 @@ Pipeline outputs are committed to `public/data/` so the site never needs the pip
 - **`src/viewers/model3d.ts`** — three.js, GLB meshes per structure, slice plane + clipping at the crosshair, explode, picking.
 - **`src/ui/sidebar.ts`** — topic tabs, controls, structure list, info card, About/sources dialog.
 - **`pipeline/`** — fetch sources → build label volumes → marching-cubes meshes.
+- **Vessel slab** (`state.vesselSlab`, sidebar slider 0–10 mm, default ±3): `applySlab()` in sliceViewer.ts fills empty voxels of the `vessels` layer with the nearest vessel label within ±N voxels along the current plane's normal (keeps the original image to recompute on plane/slab change), so vessels read as segments, not dots. In 3-plane layout it smears along the selected plane's axis only.
+- **Notes pane** collapses via the top-bar 'Hide notes' button (`initNotesToggle()`, `body.notes-collapsed`, remembered in localStorage).
 - Panel toggles (CT / Stylised / 3D) live in `sidebar.ts` `initPanelToggles()`: set `hidden` on the `<figure>`s and `data-count` on `#viewers` (CSS reflows the grid); remembered per browser in localStorage; at least one panel stays on. Viewers re-fit via their ResizeObservers.
 
 ### Conventions
@@ -82,4 +84,5 @@ Backlog ideas: lazy-load meshes per topic (public/data is ~24 MB, all meshes loa
 - Sulci/dura are derived from atlas boundaries, not CT. Central sulcus has a gap at |x|≈18–40 on high axial slices and meets the midline at y≈−20 (real ≈−35). Sylvian fissure has no posterior limb beyond y −30. Tentorium's anterior part is a height field, not a true petrous attachment.
 - Arteries are idealised centrelines: they can't be checked against non-contrast CT; MCA/ACA run through fissures that have no CSF label so look 'in parenchyma'. ACom is tiny. Cavernous sinus is a rounded box. Transverse sinuses are symmetric (no dominance).
 - Territories (Liu atlas) label names for level-1 values 25–30 were inferred from position (no local label table); anterior choroidal grouped with PCA as the atlas does.
+- Quadrigeminal cistern label extends back over the superior vermis to y≈−72 (superior cerebellar cistern region picked up by the HU threshold) — tighten to y > −50 if it bothers users (user said leave for now, 2026-11-25).
 - Real-CT fit residuals: third ventricle partly synthetic (~1 mL oversized); interpeduncular cistern tiny, ambient thin; aqueduct geometric; cisterna magna not connected to 4th ventricle; tentorium anterior to y≈−45 is a prior (≤3–4 mm); cerebellum anterolateral edge straight rather than following the petrous ridge; brainstem is a swept ellipse, 2–3 mm off at the CP angle; frontal/temporal/parietal lobe boundaries are atlas flat edges; central sulcus and Sylvian fissure not CT-refined.

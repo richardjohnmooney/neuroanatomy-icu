@@ -96,6 +96,22 @@ function initPanelToggles(): void {
   apply();
 }
 
+/** Collapse / expand the teaching notes pane; remembered per browser. */
+function initNotesToggle(): void {
+  const KEY = 'notes-collapsed';
+  const btn = $<HTMLButtonElement>('notes-btn');
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === '1'; } catch { /* storage unavailable */ }
+  const apply = () => {
+    document.body.classList.toggle('notes-collapsed', collapsed);
+    btn.textContent = collapsed ? 'Show notes' : 'Hide notes';
+    btn.setAttribute('aria-expanded', String(!collapsed));
+    try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch { /* ignore */ }
+  };
+  btn.onclick = () => { collapsed = !collapsed; apply(); };
+  apply();
+}
+
 function initControls(data: AppData): void {
   initPanelToggles();
   const planes: Plane[] = ['axial', 'coronal', 'sagittal'];
@@ -133,6 +149,16 @@ function initControls(data: AppData): void {
   const radio = $<HTMLInputElement>('radio-check');
   radio.checked = state.radiological;
   radio.onchange = () => setState({ radiological: radio.checked }, 'ui');
+
+  // Vessel slab: project vessels from ±N mm around the slice so they read as segments, not dots.
+  const slab = $<HTMLInputElement>('slab-range');
+  const slabVal = $('slab-value');
+  const showSlab = () => { slabVal.textContent = state.vesselSlab ? `±${state.vesselSlab} mm` : 'off'; };
+  slab.value = String(state.vesselSlab);
+  showSlab();
+  slab.oninput = () => { setState({ vesselSlab: Number(slab.value) }, 'ui'); showSlab(); };
+
+  initNotesToggle();
 
   // Keyboard: arrows / PageUp / PageDown step the slice in the current plane (Shift = 5 mm).
   window.addEventListener('keydown', (e) => {

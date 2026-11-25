@@ -130,12 +130,68 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
       baseVol = vols[0] ?? null;
       layers.forEach((l, i) => vols[i + 1] && labelVols.push({ layerId: l.id, vol: vols[i + 1] }));
     }
+    slabOrig = null; slabKey = '';
+    applySlab();
     nv.refreshColormaps();
     applyWindow();
     applyOpacity();
     nv.updateGLVolume();
     applyView();
     applyCrosshair();
+  }
+
+  // ---- vessel slab ----------------------------------------------------------------------
+  // Vessels are thin tubes, so a single slice shows them as dots. Fill each empty voxel of the
+  // vessels layer with the nearest vessel label within ±N voxels along the viewing axis, so
+  // vessels read as short segments ("thin-slab MIP"). The original image is kept to recompute.
+  const SLAB_LAYER = 'vessels';
+  let slabOrig: Uint8Array | null = null;
+  let slabKey = '';
+
+  /** Voxel axis (0..2) best aligned with the world axis normal to the current plane. */
+  function planeVoxelAxis(vol: NVImage): number {
+    const world = state.plane === 'axial' ? 2 : state.plane === 'coronal' ? 1 : 0;
+    const aff = (vol.hdr as unknown as { affine?: number[][] })?.affine;
+    if (!aff) return world;
+    let best = 0, bestV = -1;
+    for (let c = 0; c < 3; c++) { const v = Math.abs(aff[world][c]); if (v > bestV) { bestV = v; best = c; } }
+    return best;
+  }
+
+  function applySlab(): void {
+    const lv = labelVols.find((x) => x.layerId === SLAB_LAYER);
+    if (!lv) return;
+    const vol = lv.vol;
+    const img = vol.img as unknown as Uint8Array | undefined;
+    const dims = vol.hdr?.dims;
+    if (!img || !dims) return;
+    if (!slabOrig || slabOrig.length !== img.length) slabOrig = Uint8Array.from(img);
+    const n = Math.max(0, Math.round(state.vesselSlab));
+    const axis = planeVoxelAxis(vol);
+    const key = `${n}:${axis}`;
+    if (key === slabKey) return;
+    slabKey = key;
+    const out = Uint8Array.from(slabOrig);
+    if (n > 0) {
+      const nx = dims[1], ny = dims[2], nz = dims[3];
+      const size = [nx, ny, nz];
+      const stride = [1, nx, nx * ny][axis];
+      const len = size[axis];
+      const src = slabOrig;
+      // Outward from the slice: nearer vessels win over farther ones.
+      for (let d = 1; d <= n; d++) {
+        for (let idx = 0; idx < out.length; idx++) {
+          if (out[idx]) continue;
+          const a = Math.floor(idx / stride) % len;
+          const fwd = a + d < len ? src[idx + d * stride] : 0;
+          if (fwd) { out[idx] = fwd; continue; }
+          const back = a - d >= 0 ? src[idx - d * stride] : 0;
+          if (back) out[idx] = back;
+        }
+      }
+    }
+    img.set(out);
+    nv.updateGLVolume();
   }
 
   // ---- state -> NiiVue ------------------------------------------------------------------
@@ -161,6 +217,7 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
     if (!nv.volumes.length) return;
     if (changed.has('baseVolumeId') && !stylised) { void loadVolumes(); return; }
     if (changed.has('radiological') || changed.has('layout') || changed.has('plane')) applyView();
+    if (changed.has('vesselSlab') || changed.has('plane')) applySlab();
     if (changed.has('windowId')) applyWindow();
     if (changed.has('overlayOpacity')) { applyOpacity(); nv.drawScene(); }
     if (changed.has('visible') || changed.has('selectedId') || changed.has('hoverId')) refreshLuts();
