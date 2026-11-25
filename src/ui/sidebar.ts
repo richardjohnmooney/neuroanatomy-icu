@@ -13,7 +13,7 @@ export function initSidebar(data: AppData): void {
   initAbout(data);
 
   subscribe((_s, changed) => {
-    if (changed.has('topicId') || changed.has('visible')) renderList(data);
+    if (changed.has('topicId') || changed.has('visible') || changed.has('ghost')) renderList(data);
     if (changed.has('selectedId') || changed.has('hoverId')) markList();
     if (changed.has('selectedId') || changed.has('topicId')) renderInfo(data);
     if (changed.has('plane')) markPlane();
@@ -26,9 +26,11 @@ export function applyTopic(data: AppData, topicId: string): void {
   const t = data.manifest.topics.find((x) => x.id === topicId);
   if (!t) return;
   const off = new Set(t.defaultHidden ?? []);
+  const ctx = new Set(t.context ?? []);
   setState({
     topicId,
     visible: new Set(topicStructures(data, topicId).filter((s) => !off.has(s.group)).map((s) => s.id)),
+    ghost: new Set(data.manifest.structures.filter((s) => ctx.has(s.group)).map((s) => s.id)),
     selectedId: null,
     ...(t.focus ? { crosshair: t.focus } : {}),
     ...(t.plane ? { plane: t.plane } : {}),
@@ -231,7 +233,41 @@ function renderList(data: AppData): void {
     }
     host.append(box);
   }
+  renderContext(data, host, topic.context ?? []);
   markList();
+}
+
+/** Context groups: translucent in 3D only, one toggle per group. */
+function renderContext(data: AppData, host: HTMLElement, groupIds: string[]): void {
+  const groups = groupIds
+    .map((gid) => ({ g: data.manifest.groups.find((x) => x.id === gid), items: data.manifest.structures.filter((s) => s.group === gid) }))
+    .filter((x) => x.g && x.items.length);
+  if (!groups.length) return;
+  const box = document.createElement('div');
+  box.className = 'group context';
+  const title = document.createElement('div');
+  title.className = 'group-title';
+  title.textContent = 'Context (3D only, translucent)';
+  box.append(title);
+  for (const { g, items } of groups) {
+    const row = document.createElement('label');
+    row.className = 'structure-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = items.some((s) => state.ghost.has(s.id));
+    cb.onchange = () => {
+      const v = new Set(state.ghost);
+      for (const s of items) { if (cb.checked) v.add(s.id); else v.delete(s.id); }
+      setState({ ghost: v }, 'ui');
+    };
+    const sw = document.createElement('span');
+    sw.className = 'swatch ghost';
+    const name = document.createElement('span');
+    name.textContent = g!.name;
+    row.append(cb, sw, name);
+    box.append(row);
+  }
+  host.append(box);
 }
 
 function markList(): void {

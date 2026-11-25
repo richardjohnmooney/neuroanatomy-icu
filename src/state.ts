@@ -8,7 +8,8 @@ export interface AppState {
   topicId: string;
   baseVolumeId: string;         // which BaseVolume the left panel shows (CT now, MRI later)
   windowId: string;             // WindowPreset.id
-  visible: Set<string>;         // structure ids shown in overlays/3D
+  visible: Set<string>;         // focus structure ids: coloured on slices, solid in 3D
+  ghost: Set<string>;           // context structure ids: translucent in 3D only, never on slices
   selectedId: string | null;    // structure shown in info card / highlighted
   hoverId: string | null;
   overlayOpacity: number;       // 0..1 colour over CT
@@ -31,6 +32,7 @@ export const state: AppState = {
   baseVolumeId: 'ct',
   windowId: 'brain',
   visible: new Set(),
+  ghost: new Set(),
   selectedId: null,
   hoverId: null,
   overlayOpacity: 0.45,

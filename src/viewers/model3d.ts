@@ -16,10 +16,13 @@ interface Entry {
   meshes: THREE.Mesh[];
   centre: THREE.Vector3;   // MNI mm, rest position
   deep: boolean;
+  ghost?: boolean;         // currently shown only as translucent context (not pickable)
 }
 
 const BRAIN_CENTRE_MNI = new THREE.Vector3(0, -18, 15);
 const EXPLODE_MM = 25;
+/** Opacity of context ("ghost") structures — faint enough that the topic's structures dominate. */
+const GHOST_OPACITY = 0.12;
 const SLICE_COLOR = 0x4fb3ff;
 
 export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): void }> {
@@ -145,14 +148,15 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
       const st = data.byId.get(id)!;
       const isSel = id === sel;
       const isHover = id === s.hoverId;
+      const ghost = !s.visible.has(id) && s.ghost.has(id); // context-only structure
       const fade = sel !== null && !isSel;
-      m.transparent = fade;
-      m.opacity = fade ? 0.3 : 1;
-      m.depthWrite = !fade;
+      m.transparent = ghost || fade;
+      m.opacity = ghost ? GHOST_OPACITY : fade ? 0.3 : 1;
+      m.depthWrite = !(ghost || fade);
       m.side = clip ? THREE.DoubleSide : THREE.FrontSide;
       m.clippingPlanes = clip ? [clipPlane] : null;
       m.emissive.set(st.color);
-      m.emissiveIntensity = isSel ? 0.45 : isHover ? 0.3 : 0;
+      m.emissiveIntensity = ghost ? 0 : isSel ? 0.45 : isHover ? 0.3 : 0;
       tmpColor.set(st.color);
       if (isHover && !isSel) tmpColor.lerp(new THREE.Color(0xffffff), 0.3);
       m.color.copy(tmpColor);
@@ -160,10 +164,12 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
     }
     for (const e of entries) {
       const sid = e.structure.id;
-      e.root.visible = s.visible.has(sid);
+      const focus = s.visible.has(sid);
+      e.root.visible = focus || s.ghost.has(sid);
+      e.ghost = !focus;
       const isSel = sid === sel;
-      // selected and deep things draw after faded shells so they stay visible through them
-      for (const m of e.meshes) m.renderOrder = isSel ? 5 : e.deep ? 2 : 1;
+      // ghosts first, then shells/deep things, selected last, so focus structures show through context
+      for (const m of e.meshes) m.renderOrder = e.ghost ? 0 : isSel ? 5 : e.deep ? 2 : 1;
       // explode
       const dir = e.centre.clone().sub(BRAIN_CENTRE_MNI);
       const dist = dir.length();
@@ -184,7 +190,7 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
     ndc.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
     raycaster.setFromCamera(ndc, camera);
     const targets: THREE.Object3D[] = [];
-    for (const e of entries) if (e.root.visible) targets.push(...e.meshes);
+    for (const e of entries) if (e.root.visible && !e.ghost) targets.push(...e.meshes); // context isn't pickable
     const hits = raycaster.intersectObjects(targets, false);
     for (const h of hits) {
       if (state.clip3d && clipPlane.distanceToPoint(h.point) < 0) continue;
@@ -255,7 +261,7 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
   resize();
 
   // ---- store
-  const relevant: (keyof AppState)[] = ['crosshair', 'plane', 'clip3d', 'explode', 'visible', 'selectedId', 'hoverId'];
+  const relevant: (keyof AppState)[] = ['crosshair', 'plane', 'clip3d', 'explode', 'visible', 'ghost', 'selectedId', 'hoverId'];
   const unsub = subscribe((s, changed) => {
     if (!relevant.some((k) => changed.has(k))) return;
     apply(s);

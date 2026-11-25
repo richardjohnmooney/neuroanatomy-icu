@@ -68,9 +68,7 @@
       "name": "CSF system",
       "groups": [
         "csf",
-        "cisterns",
-        "posterior-fossa",
-        "deep-grey"
+        "cisterns"
       ],
       "focus": [
         0,
@@ -78,16 +76,17 @@
         -8
       ],
       "intro": "CSF is made mainly by choroid plexus in the lateral ventricles and flows: lateral ventricles → foramina of Monro → third ventricle → cerebral aqueduct → fourth ventricle → foramina of Luschka and Magendie → basal cisterns → subarachnoid space over the convexities → arachnoid granulations into the venous sinuses. On an ICU CT check three things every time: ventricle size (hydrocephalus?), the basal cisterns (open or effaced?), and blood in the ventricles or cisterns. Scroll from the vertex down to the foramen magnum and follow the flow.",
-      "defaultHidden": [
-        "deep-grey"
+      "defaultHidden": [],
+      "context": [
+        "lobes",
+        "posterior-fossa"
       ]
     },
     {
       "id": "fissures",
       "name": "Fissures & sulci",
       "groups": [
-        "sulci",
-        "lobes"
+        "sulci"
       ],
       "defaultHidden": [],
       "focus": [
@@ -95,26 +94,29 @@
         -20,
         40
       ],
-      "intro": "Fissures and sulci are the landmarks that let you name the lobes on a CT slice. The interhemispheric fissure divides the hemispheres; the Sylvian fissure separates the temporal lobe from the frontal and parietal lobes; the central sulcus divides frontal from parietal; on the medial surface the parieto-occipital sulcus separates parietal from occipital, and the calcarine sulcus lies within the occipital lobe. Sulcal effacement (sulci disappearing) is an early sign of brain swelling."
+      "intro": "Fissures and sulci are the landmarks that let you name the lobes on a CT slice. The interhemispheric fissure divides the hemispheres; the Sylvian fissure separates the temporal lobe from the frontal and parietal lobes; the central sulcus divides frontal from parietal; on the medial surface the parieto-occipital sulcus separates parietal from occipital, and the calcarine sulcus lies within the occipital lobe. Sulcal effacement (sulci disappearing) is an early sign of brain swelling.",
+      "context": [
+        "lobes"
+      ]
     },
     {
       "id": "dura",
       "name": "Falx & tentorium",
       "groups": [
-        "dura",
-        "posterior-fossa",
-        "lobes"
+        "dura"
       ],
-      "defaultHidden": [
-        "lobes"
-      ],
+      "defaultHidden": [],
       "focus": [
         0,
         -55,
         5
       ],
       "plane": "coronal",
-      "intro": "The dura forms two rigid sheets that divide the cranial cavity: the falx cerebri between the hemispheres and the tentorium cerebelli between the cerebrum and cerebellum. Because the skull and these folds cannot stretch, a mass pushes brain past their free edges — herniation. Supratentorial masses herniate under the falx (subfalcine) or down through the tentorial notch (uncal/central); posterior fossa masses push up through the notch or down through the foramen magnum. Try the coronal view, and the 3D model with the lobes hidden."
+      "intro": "The dura forms two rigid sheets that divide the cranial cavity: the falx cerebri between the hemispheres and the tentorium cerebelli between the cerebrum and cerebellum. Because the skull and these folds cannot stretch, a mass pushes brain past their free edges — herniation. Supratentorial masses herniate under the falx (subfalcine) or down through the tentorial notch (uncal/central); posterior fossa masses push up through the notch or down through the foramen magnum. Try the coronal view. In 3D the brain is shown faintly for context — toggle it under 'Context' in the structure list.",
+      "context": [
+        "lobes",
+        "posterior-fossa"
+      ]
     },
     {
       "id": "vessels",
@@ -122,12 +124,10 @@
       "groups": [
         "arteries",
         "veins",
-        "territories",
-        "lobes"
+        "territories"
       ],
       "defaultHidden": [
-        "territories",
-        "lobes"
+        "territories"
       ],
       "focus": [
         0,
@@ -135,7 +135,11 @@
         -12
       ],
       "plane": "axial",
-      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. Switch on 'Arterial territories' to see which territory a hypodensity belongs to."
+      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. Switch on 'Arterial territories' to see which territory a hypodensity belongs to.",
+      "context": [
+        "lobes",
+        "posterior-fossa"
+      ]
     }
   ],
   "structures": [
