@@ -147,6 +147,9 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
     descs.forEach((d, i) => { const v = vols[i + offset]; if (v) labelVols.push({ ...d, vol: v }); });
     slabOrig = null; slabKey = '';
     applySlab();
+    // `colormapLabel` passed to loadVolumes isn't reliably applied, so assign it explicitly —
+    // otherwise label layers render as grey images until the next LUT refresh (e.g. a hover).
+    for (const lv of labelVols) lv.vol.colormapLabel = buildLut(lv.layerId, lv.slab);
     nv.refreshColormaps();
     applyWindow();
     applyOpacity();

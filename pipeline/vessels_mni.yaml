@@ -10,9 +10,13 @@ arteries:
   - id: internal-carotid-artery
     mirror: true
     radius: 2.0
+    snap: carotid_canal   # extracranial/petrous points may be snapped to the canal seen on CT
     paths:
-      # petrous (from carotid canal) -> cavernous (alongside sella) -> siphon -> supraclinoid -> terminus
-      - [[25, -12, -42], [21, -6, -36], [17, -2, -32], [15, 4, -30], [15, 10, -27], [14, 14, -22], [13, 9, -17], [13, 3, -14]]
+      # cervical (from the bottom of the grid, ~C1) -> up into the carotid canal (vertical petrous)
+      # -> horizontal petrous -> cavernous (alongside sella) -> siphon -> supraclinoid -> terminus.
+      # Extracranial/petrous points are initial guesses; build_vessels snaps them to the CT canal
+      # (`snap: carotid_canal` above) where the canal is visible.
+      - [[30, -10, -72], [29, -11, -64], [28, -12, -56], [27, -12, -49], [26, -12, -45], [25, -12, -42], [21, -6, -36], [17, -2, -32], [15, 4, -30], [15, 9, -25], [14, 14, -22], [13, 9, -17], [13, 3, -14]]
 
   - id: middle-cerebral-artery
     mirror: true
@@ -61,9 +65,13 @@ arteries:
   - id: vertebral-artery
     mirror: true
     radius: 1.4
+    snap: c1_vertebral    # V3 points may be snapped to the C1 transverse foramen / posterior-arch groove
     paths:
-      # from foramen magnum, curving anteromedially around the medulla
-      - [[11, -36, -66], [10, -30, -58], [7, -24, -52], [3, -20, -48], [0, -19, -46]]
+      # V3: up from the C1 transverse foramen (bottom of grid), back and medially along the groove on
+      # the posterior arch of C1, through the atlanto-occipital membrane / dura at the foramen magnum;
+      # V4: intradural, curving anteromedially around the medulla. V3 points are initial guesses
+      # (`snap: c1_vertebral` above).
+      - [[28, -20, -72], [29, -24, -68], [26, -32, -67], [20, -38, -68], [14, -38, -67], [11, -36, -66], [10, -30, -58], [7, -24, -52], [3, -20, -48], [0, -19, -46]]
 
 veins:
   - id: superior-sagittal-sinus
@@ -117,5 +125,6 @@ veins:
 
   - id: cavernous-sinus
     mirror: true
-    radius: 0  # volumetric, not a tube: box around the cavernous ICA lateral to the sella
-    box: {x: [8, 19], y: [-8, 14], z: [-37, -25]}
+    radius: 0  # volumetric, not a tube: soft ellipsoid around the cavernous ICA lateral to the sella,
+    # restricted to non-bone voxels (CT HU < ~150) so it never forms a square block against the sphenoid.
+    ellipsoid: {centre: [14, 3, -31], radii: [5.5, 10, 5.5]}

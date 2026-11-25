@@ -39,7 +39,8 @@
           "level": 500
         }
       ],
-      "attribution": "Head CT: CQ500 dataset, case CQ500-CT-148 (qure.ai; Chilamkurthy et al., Lancet 2018;392:2388), CC BY-NC-SA 4.0. Resampled, registered to MNI152 and defaced; this derived image is shared under the same licence."
+      "attribution": "Head CT: CQ500 dataset, case CQ500-CT-148 (qure.ai; Chilamkurthy et al., Lancet 2018;392:2388), CC BY-NC-SA 4.0. Resampled, registered to MNI152 and defaced; this derived image is shared under the same licence.",
+      "hideGroups": []
     },
     {
       "id": "cta",
@@ -66,7 +67,10 @@
           "level": 500
         }
       ],
-      "attribution": "Simulated from the non-contrast CT (CQ500-CT-148) by adding contrast along this app's vessel model — not a real angiogram; only the modelled main vessels are shown."
+      "attribution": "Simulated from the non-contrast CT (CQ500-CT-148) by adding contrast along this app's vessel model â€” not a real angiogram; only the modelled main vessels are shown.",
+      "hideGroups": [
+        "veins"
+      ]
     },
     {
       "id": "ctv",
@@ -93,7 +97,10 @@
           "level": 500
         }
       ],
-      "attribution": "Simulated from the non-contrast CT (CQ500-CT-148) by adding contrast along this app's vessel model — not a real venogram; only the modelled main vessels are shown."
+      "attribution": "Simulated from the non-contrast CT (CQ500-CT-148) by adding contrast along this app's vessel model â€” not a real venogram; only the modelled main vessels are shown.",
+      "hideGroups": [
+        "arteries"
+      ]
     }
   ],
   "labelLayers": [

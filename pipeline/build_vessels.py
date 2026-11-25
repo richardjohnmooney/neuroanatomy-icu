@@ -12,6 +12,16 @@ YAML path if derivation fails):
   straight sinus     = top of the tentorium ridge at the midline, vein of Galen -> confluence
   transverse sinus   = outer posterolateral rim of the tentorium, confluence -> y -62 (sigmoid snapped on)
 Mirroring: `mirror: true` entries are authored for the RIGHT (+x); left = x -> -x.
+
+CT snapping (`snap:` in the YAML): the leading extracranial/petrous points of the ICA (`carotid_canal`,
+z < -40) and the vertebral V3 loop (`c1_vertebral`, z < -64 or (y < -30 and |x| > 12) or z <= -52) are replaced by a
+minimum-cost path through ct.nii.gz (soft tissue cheap, bone/air dear, bone-clearance bonus so the path
+centres in channels, quadratic penalty for leaving a corridor around the YAML guess) between a free start
+at the bottom of the grid and the first un-snapped YAML point. Each side is snapped independently on the CT
+(the left uses the mirrored YAML guesses). See `snap_path`.
+
+Cavernous sinus = soft ellipsoid (`ellipsoid: {centre, radii}`, or legacy `box:`) restricted to non-bone
+voxels (CT < ~150 HU, no air) with a soft edge; see `ellipsoid_field`.
 """
 import colorsys
 import numpy as np
@@ -20,6 +30,9 @@ import trimesh
 import yaml
 from scipy import ndimage as ndi
 from scipy.interpolate import splprep, splev
+from scipy.spatial import cKDTree
+from skimage.graph import MCP_Geometric
+from skimage.morphology import ball
 from skimage import measure
 from common import CACHE, DATA, MESH_DIR, grid_affine, save_nifti, structures
 
@@ -124,6 +137,125 @@ def rounded_box_mesh(box, rad=3.0, h=0.5):
     v, f, _, _ = measure.marching_cubes(sdf, 0.0, spacing=(h, h, h))
     v = v + np.array([gx[0], gy[0], gz[0]])
     m = trimesh.Trimesh(v, f, process=True)
+    m.fix_normals()
+    if m.volume < 0:
+        m.invert()
+    return m
+
+
+# ----------------------------------------------------------------------------- CT snapping
+_SM = {}      # one-entry caches keyed by id(ct)
+
+
+def smooth_ct(ct, sigma=0.7):
+    if _SM.get("hs_id") != id(ct):
+        _SM["hs"], _SM["hs_id"] = ndi.gaussian_filter(ct, sigma), id(ct)
+    return _SM["hs"]
+
+
+def snap_cost(ct):
+    """Per-voxel traversal cost for the snapping path search (>= 1)."""
+    if "cost" in _SM and _SM.get("cost_id") == id(ct):
+        return _SM["cost"]
+    hs = smooth_ct(ct)
+    edt = ndi.distance_transform_edt(hs < 300)                     # distance to bone
+    c = (1.0 + 25.0 * np.clip((hs - 150) / 250, 0, 1)               # bone
+         + 10.0 * np.clip((-100 - hs) / 200, 0, 1)                  # air
+         + 2.0 * np.clip(1 - edt / 3.0, 0, 1)                      # prefer channel centres / bone clearance
+         + 4.0 * np.clip((35 - hs) / 80, 0, 1)).astype(np.float32)    # prefer soft tissue (20-80 HU) over fat
+    _SM["cost"], _SM["cost_id"] = c, id(ct)
+    return c
+
+
+def densify(p, step=0.5):
+    p = np.asarray(p, float)
+    u = arclen(p)
+    n = max(int(np.ceil(u[-1] / step)) + 1, 2)
+    uu = np.linspace(0, u[-1], n)
+    return np.stack([np.interp(uu, u, p[:, i]) for i in range(3)], 1)
+
+
+def snap_path(G, ct, pts, n_snap, start_free=4.0, end_free=3.0, corridor=12.0, dev_w=0.02, sigma=2.0, canal_bonus=1.0):
+    """Replace pts[:n_snap] by a CT-following path ending at pts[n_snap] (the first fixed point, nudged <= end_free mm out of bone/air).
+
+    Minimum-cost route (skimage MCP_Geometric) inside `corridor` mm of the guessed polyline; the start is
+    free within `start_free` mm (in the plane of the first guess) so it can find the channel at the grid
+    bottom. The route is Gaussian-smoothed (sigma mm, ends kept). Returns the full new point list."""
+    pts = np.asarray(pts, float)
+    guide = densify(pts[: n_snap + 1], 0.5)
+    gv = nib.affines.apply_affine(G.inv, guide)
+    pad = int(corridor) + 2
+    lo = np.maximum(np.floor(gv.min(0)).astype(int) - pad, 0)
+    hi = np.minimum(np.ceil(gv.max(0)).astype(int) + pad + 1, G.shape)
+    sub = tuple(slice(lo[k], hi[k]) for k in range(3))
+    ii = np.stack(np.meshgrid(*[np.arange(lo[k], hi[k]) for k in range(3)], indexing="ij"), -1)
+    d, _ = cKDTree(gv).query(ii.reshape(-1, 3))
+    d = d.reshape(ii.shape[:3])
+    cost = snap_cost(ct)[sub]
+    if canal_bonus < 1:                                       # soft pockets enclosed by bone (canals/foramina) are cheap
+        hs = smooth_ct(ct)[sub]
+        enc = ndi.binary_closing(np.pad(hs > 400, 4, mode="edge"), ball(3))[4:-4, 4:-4, 4:-4] & (hs < 300) & (hs > -100)
+        cost = np.where(enc, cost * canal_bonus, cost)
+    cost = cost + dev_w * d * d
+    cost[d > corridor] = 1e4
+    v0 = gv[0]
+    start = np.argwhere((np.abs(ii[..., 2] - round(v0[2])) < 0.5) & (np.linalg.norm(ii - v0, axis=-1) <= start_free))
+    # the first fixed point may itself sit in bone/air: move it to the cheapest voxel within `end_free` mm
+    near = np.argwhere(np.linalg.norm(ii - gv[-1], axis=-1) <= end_free)
+    cc = cost[tuple(near.T)] + 0.5 * np.linalg.norm(near + lo - gv[-1], axis=1)
+    end = tuple(near[np.argmin(cc)])
+    anchor = nib.affines.apply_affine(G.A, np.array(end) + lo)
+    mcp = MCP_Geometric(cost, fully_connected=True)
+    mcp.find_costs([tuple(s_) for s_ in start], [end])
+    path = np.array(mcp.traceback(end)) + lo
+    P = nib.affines.apply_affine(G.A, path)
+    P[-1] = anchor
+    P = smooth_line(P, sigma_mm=sigma, step=1.0)
+    P[-1] = anchor
+    return np.vstack([P, pts[n_snap + 1:]])
+
+
+def snap_count(kind, pts):
+    """Number of leading YAML points that are extracranial/petrous (to be snapped)."""
+    ok = []
+    for x, y, z in pts:
+        if kind == "carotid_canal":
+            ok.append(z < -40)
+        else:                                                        # c1_vertebral
+            ok.append(z < -64 or (y < -30 and abs(x) > 12) or z <= -52)   # V3 loop + foramen-magnum approach
+    n = 0
+    while n < len(ok) and ok[n]:
+        n += 1
+    return n
+
+
+def ellipsoid_field(G, ct, ell, sgn, soft=1.5):
+    """Soft ellipsoid occupancy (0..1) restricted to non-bone, non-air voxels.
+    Returns (slice, field) on the grid sub-block. Edge width `soft` mm plus PSF-like smoothing."""
+    c = np.array(ell["centre"], float) * np.array([sgn, 1, 1])
+    rad = np.array(ell["radii"], float)
+    pad = 5
+    a = nib.affines.apply_affine(G.inv, c - rad - pad); b = nib.affines.apply_affine(G.inv, c + rad + pad)
+    lo = np.maximum(np.floor(np.minimum(a, b)).astype(int), 0)
+    hi = np.minimum(np.ceil(np.maximum(a, b)).astype(int) + 1, G.shape)
+    sl = tuple(slice(lo[k], hi[k]) for k in range(3))
+    ii = np.stack(np.meshgrid(*[np.arange(lo[k], hi[k]) for k in range(3)], indexing="ij"), -1)
+    p = nib.affines.apply_affine(G.A, ii.reshape(-1, 3)).reshape(ii.shape) - c
+    k0 = np.linalg.norm(p / rad, axis=-1)
+    k1 = np.linalg.norm(p / rad ** 2, axis=-1)
+    sd = k0 * (k0 - 1) / np.maximum(k1, 1e-6)                        # first-order signed distance, mm
+    f = np.clip(0.5 - sd / soft, 0, 1)
+    hs = smooth_ct(ct)[sl]
+    nb = np.clip((180 - hs) / 60.0, 0, 1) * np.clip((hs + 200) / 150.0, 0, 1)   # CT<~150 HU, not air
+    f = ndi.gaussian_filter((f * nb).astype(np.float32), 0.6)
+    return sl, f
+
+
+def ellipsoid_mesh(G, sl, f):
+    pf = np.pad(ndi.gaussian_filter(f, 0.8), 2)
+    v, fc, _, _ = measure.marching_cubes(pf, 0.45)
+    v = nib.affines.apply_affine(G.A, v - 2 + np.array([s.start for s in sl]))
+    m = trimesh.Trimesh(v, fc, process=True)
     m.fix_normals()
     if m.volume < 0:
         m.invert()
@@ -269,9 +401,27 @@ def load_vessel_defs():
     return spec["arteries"] + spec["veins"]
 
 
-def prepare_geometry(G, dura, defs):
+SNAP_REPORT = {}
+
+
+def side_paths(vd, vid, sgn):
+    """Centreline paths of vessel `vid` for side sgn (+1 right/authored, -1 left): the independently
+    CT-snapped left paths if present (`vd[vid + '@L']`), otherwise the mirrored right paths."""
+    if sgn < 0 and vid + "@L" in vd:
+        return [np.array(p, float) for p in vd[vid + "@L"]]
+    return [p * np.array([sgn, 1, 1]) for p in vd[vid]]
+
+
+def is_volumetric(d):
+    return "ellipsoid" in d or "box" in d
+
+
+def prepare_geometry(G, dura, defs, ct=None):
     """Final per-vessel centrelines (arteries + derived sinuses + snapped sigmoid/confluence).
-    Returns (vessels, vd, dnotes): vessels = [(def, paths|None)], vd = id -> paths (RIGHT/authored side)."""
+    Returns (vessels, vd, dnotes): vessels = [(def, paths|None)], vd = id -> paths (RIGHT/authored side,
+    CT-snapped where the YAML has `snap:`); vd[id + '@L'] = independently snapped LEFT paths (use side_paths)."""
+    if ct is None:
+        ct = np.asarray(nib.load(str(DATA / "ct.nii.gz")).dataobj).astype(np.float32)
     sdict = {s["id"]: s for s in structures() if s["layer"] == "vessels"}
     try:
         derived, dnotes, conf = derive_sinuses(dura, G)
@@ -284,7 +434,7 @@ def prepare_geometry(G, dura, defs):
     for d in defs:
         vid = d["id"]
         s = sdict[vid]
-        if "box" in d:
+        if is_volumetric(d):
             vessels.append((d, None))
             continue
         paths = [np.array(p, float) for p in d["paths"]]
@@ -293,6 +443,27 @@ def prepare_geometry(G, dura, defs):
         vessels.append((d, paths))
     # transverse -> sigmoid continuity and confluence snapping
     vd = {d["id"]: p for d, p in vessels}
+    # extracranial / petrous snapping to the CT, each side independently
+    for d, _ in vessels:
+        kind = d.get("snap")
+        if not kind:
+            continue
+        vid = d["id"]
+        base = np.array(d["paths"][0], float)
+        for tag, sgn in (("R", 1), ("L", -1)):
+            guess = base * np.array([sgn, 1, 1])
+            n = snap_count(kind, guess)
+            if n == 0:
+                continue
+            new = snap_path(G, ct, guess, n, canal_bonus=0.35 if kind == "carotid_canal" else 1.0)
+            dense = densify(new[: len(new) - (len(guess) - n - 1)], 0.5)
+            tree = cKDTree(dense)
+            shifts = tree.query(guess[:n])[0]
+            SNAP_REPORT[(vid, tag)] = dict(n=n, shifts=shifts, path=dense, guess=guess[:n])
+            if sgn > 0:
+                vd[vid] = [new] + [np.array(p, float) for p in d["paths"][1:]]
+            else:
+                vd[vid + "@L"] = [new] + [np.array(p, float) * np.array([-1, 1, 1]) for p in d["paths"][1:]]
     if "transverse-sinus" in derived:
         tend = derived["transverse-sinus"][0][-1].copy()
         sig = vd["sigmoid-sinus"][0].copy()
@@ -317,7 +488,7 @@ def build():
     sdict = {s["id"]: s for s in structures() if s["layer"] == "vessels"}
     defs = load_vessel_defs()
 
-    vessels, vd, dnotes = prepare_geometry(G, dura, defs)
+    vessels, vd, dnotes = prepare_geometry(G, dura, defs, ct)
 
     lab = np.zeros(G.shape, np.uint8)
     meshes = {}
@@ -325,14 +496,20 @@ def build():
     for d, _ in vessels:
         vid = d["id"]; s = sdict[vid]; r = float(d.get("radius", 0))
         val = s["labelValue"]
-        paths = vd[vid]
+        paths = vd[vid] if not is_volumetric(d) else None
         sides = [("R", 1)] + ([("L", -1)] if d.get("mirror") else [])
         if not d.get("mirror"):
             sides = [("", 1)]
         for tag, sgn in sides:
-            ps = [p * np.array([sgn, 1, 1]) for p in paths] if paths is not None else None
-            if "box" in d:
-                box = d["box"]
+            if is_volumetric(d):
+                if "ellipsoid" in d:
+                    sl, f = ellipsoid_field(G, ct, d["ellipsoid"], sgn)
+                    mk = np.zeros(G.shape, bool)
+                    mk[sl] = (f >= 0.5) & (smooth_ct(ct)[sl] < 150)
+                    lab[mk & (lab == 0)] = val
+                    meshes[f"{vid}_{tag}.glb"] = ellipsoid_mesh(G, sl, f)
+                    continue
+                box = d["box"]                                       # legacy rounded box (no CT restriction)
                 m = rounded_box_mesh(box)
                 if sgn < 0:
                     m = mirror_mesh(m)
@@ -347,6 +524,7 @@ def build():
                 lab[mk & (lab == 0)] = val
                 meshes[f"{vid}_{tag}.glb"] = m
                 continue
+            ps = side_paths(vd, vid, sgn)
             parts = []
             for p in ps:
                 raster_path(lab, p, max(r, MIN_RASTER_R), val, G.inv, G.shape)
@@ -391,6 +569,25 @@ def centreline_stats(G, anat, ct, centrelines):
         par = np.isin(al, PARENCHYMA).mean() * 100
         csf = np.isin(al, CSF).mean() * 100
         print(f"  {vid:32s}{tag or '-':2s} medHU={np.median(hu):6.1f}  parenchyma={par:5.1f}%  csf={csf:5.1f}%")
+
+
+def snap_stats(G, ct):
+    """Median HU along each snapped extracranial/petrous path, by segment, and shift from the YAML guesses."""
+    print("\nsnapped extracranial paths (CT HU along the centreline; shift = distance YAML guess -> snapped path):")
+    for (vid, tag), r in SNAP_REPORT.items():
+        P = r["path"]
+        hu = ndi.map_coordinates(ct, nib.affines.apply_affine(G.inv, P).T, order=1, mode="nearest")
+        z = P[:, 2]
+        if vid == "internal-carotid-artery":
+            segs = [("cervical z<-60", z < -60), ("vertical canal -60..-48", (z >= -60) & (z < -48)),
+                    ("horizontal petrous z>=-48", z >= -48)]
+        else:
+            u = arclen(P) / arclen(P)[-1]
+            segs = [(f"V3 third {i + 1}", (u >= i / 3) & (u <= (i + 1) / 3 + 1e-9)) for i in range(3)]
+        txt = "; ".join(f"{n}: {np.median(hu[m]):.0f} HU (max {hu[m].max():.0f})" for n, m in segs if m.any())
+        print(f"  {vid:22s}{tag} n_snapped={r['n']} maxshift={r['shifts'].max():.1f} mm "
+              f"(per point {np.round(r['shifts'], 1).tolist()}) allMedHU={np.median(hu):.0f} "
+              f"frac>300HU={np.mean(hu > 300) * 100:.0f}%\n      {txt}")
 
 
 def save_png(img, path):
@@ -467,6 +664,7 @@ def render_checks(G, lab, ct, sdict):
 def main():
     G, lab, anat, ct, dura, centrelines, sdict = build()
     centreline_stats(G, anat, ct, centrelines)
+    snap_stats(G, ct)
     render_checks(G, lab, ct, sdict)
     for v, s in sorted(sdict.items(), key=lambda kv: kv[1]["labelValue"]):
         print(f"label {s['labelValue']:2d} {v:32s} voxels={(lab == s['labelValue']).sum()}")

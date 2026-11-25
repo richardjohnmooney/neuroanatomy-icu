@@ -12,6 +12,7 @@ export interface BaseVolume {
   modality: Modality;
   file: string;             // relative to public/data, e.g. "ct.nii.gz"
   windows: WindowPreset[];  // first is default
+  hideGroups?: string[];    // structure groups switched off by default while this scan is shown (e.g. veins on a CTA)
   attribution: string;      // short source + licence
 }
 export interface WindowPreset {

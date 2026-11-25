@@ -25,10 +25,10 @@ export function initSidebar(data: AppData): void {
 export function applyTopic(data: AppData, topicId: string): void {
   const t = data.manifest.topics.find((x) => x.id === topicId);
   if (!t) return;
-  const off = new Set(t.defaultHidden ?? []);
-  const ctx = new Set(t.context ?? []);
   const vols = data.volumes.baseVolumes;
   const scan = vols.find((v) => v.id === t.scan) ?? vols[0];
+  const off = new Set([...(t.defaultHidden ?? []), ...(scan.hideGroups ?? [])]);
+  const ctx = new Set(t.context ?? []);
   const scanPatch = scan.id === state.baseVolumeId ? {} : { baseVolumeId: scan.id, windowId: scan.windows[0].id };
   setState({
     ...scanPatch,
@@ -146,8 +146,22 @@ function initControls(data: AppData): void {
   };
   fillWindows();
   scan.onchange = () => {
-    const vol = data.volumes.baseVolumes.find((v) => v.id === scan.value);
-    if (vol) setState({ baseVolumeId: vol.id, windowId: vol.windows[0].id }, 'ui');
+    const vols = data.volumes.baseVolumes;
+    const vol = vols.find((v) => v.id === scan.value);
+    if (!vol) return;
+    // Re-apply scan-specific defaults to the current topic's groups: groups the old scan hid come
+    // back, groups the new scan hides go (e.g. CTA → arteries only, CTV → veins only, CT → both).
+    const prev = vols.find((v) => v.id === state.baseVolumeId);
+    const topic = data.manifest.topics.find((x) => x.id === state.topicId);
+    const groups = new Set(topic?.groups ?? []);
+    const hideNew = new Set((vol.hideGroups ?? []).filter((g) => groups.has(g)));
+    const showAgain = new Set((prev?.hideGroups ?? []).filter((g) => groups.has(g) && !hideNew.has(g) && !(topic?.defaultHidden ?? []).includes(g)));
+    const visible = new Set(state.visible);
+    for (const s of data.manifest.structures) {
+      if (hideNew.has(s.group)) visible.delete(s.id);
+      else if (showAgain.has(s.group)) visible.add(s.id);
+    }
+    setState({ baseVolumeId: vol.id, windowId: vol.windows[0].id, visible }, 'ui');
   };
   win.onchange = () => setState({ windowId: win.value }, 'ui');
   const caption = document.querySelector('#viewer-ct figcaption span');
