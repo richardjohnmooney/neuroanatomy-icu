@@ -7,7 +7,7 @@ Interactive web app teaching basic neuroanatomy to ICU registrars: a real CT tem
 ## Location, repo, environment
 - **Project lives at `C:\dev\ct-brain-anatomy`** (moved off Google Drive 2026-11-25; the old `G:\My Drive\claude\CT Brain anatomy` copy is obsolete). Cloud copy: public GitHub repo `richardjohnmooney/neuroanatomy-icu`; the app deploys to GitHub Pages from `main` via `.github/workflows/deploy.yml`.
 - Commits use the GitHub no-reply email (set in this repo's git config) — keep it that way; the repo is public.
-- Python: **uv**, venv on C: — `$env:UV_PROJECT_ENVIRONMENT = "C:envs\ct-brain-anatomy"` before `uv sync`/`uv run` (convention from the user's root CLAUDE.md on Drive, which no longer applies automatically here).
+- Python: **uv**, venv on C: — `$env:UV_PROJECT_ENVIRONMENT = "C:\venvs\ct-brain-anatomy"` before `uv sync`/`uv run` (convention from the user's root CLAUDE.md on Drive, which no longer applies automatically here).
 - `pipeline/cache/` (gitignored, ~1.8 GB) holds downloaded sources: Rorden template, nilearn atlases, the Liu arterial atlas (`Atlas_182_MNI152/`, from NITRC behind a free login), the CQ500-CT-148 study + cached registration (`ct_subject/`). Not reproducible from the repo alone — back it up if needed.
 
 ## Run
@@ -20,7 +20,7 @@ npm run build      # typecheck + static build to dist/
 
 Data pipeline:
 ```powershell
-$env:UV_PROJECT_ENVIRONMENT = "C:envs\ct-brain-anatomy"
+$env:UV_PROJECT_ENVIRONMENT = "C:\venvs\ct-brain-anatomy"
 cd pipeline; uv sync; uv run python run_all.py
 ```
 Pipeline outputs are committed to `public/data/` so the site never needs the pipeline at runtime. Run order: build_ct → build_labels → build_overlays → build_territories → build_vessels → build_meshes → check_labels.
