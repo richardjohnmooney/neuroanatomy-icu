@@ -4,19 +4,26 @@ Interactive web app teaching basic neuroanatomy to ICU registrars: a real CT tem
 
 **Keep this file updated** at the end of every working session (status, decisions, known issues).
 
+## Location, repo, environment
+- **Project lives at `C:\dev\ct-brain-anatomy`** (moved off Google Drive 2026-11-25; the old `G:\My Drive\claude\CT Brain anatomy` copy is obsolete). Cloud copy: public GitHub repo `richardjohnmooney/neuroanatomy-icu`; the app deploys to GitHub Pages from `main` via `.github/workflows/deploy.yml`.
+- Commits use the GitHub no-reply email (set in this repo's git config) — keep it that way; the repo is public.
+- Python: **uv**, venv on C: — `$env:UV_PROJECT_ENVIRONMENT = "C:envs\ct-brain-anatomy"` before `uv sync`/`uv run` (convention from the user's root CLAUDE.md on Drive, which no longer applies automatically here).
+- `pipeline/cache/` (gitignored, ~1.8 GB) holds downloaded sources: Rorden template, nilearn atlases, the Liu arterial atlas (`Atlas_182_MNI152/`, from NITRC behind a free login), the CQ500-CT-148 study + cached registration (`ct_subject/`). Not reproducible from the repo alone — back it up if needed.
+
 ## Run
 ```powershell
-npm run deps       # first time / after changing package.json: installs into C:\node_modules\ct-brain-anatomy
+npm install
 npm run dev        # http://localhost:5173
 npm run build      # typecheck + static build to dist/
 ```
-**node_modules lives on C:, not in the project.** npm fails with EBADF writing onto the Google Drive volume, and Drive can't hold junctions. So deps go in `C:\node_modules\ct-brain-anatomy\node_modules` (override with `DEPS_DIR`). `tools/run.mjs` runs vite/tsc from there; `vite.config.mjs` aliases `three` / `@niivue/niivue` to it; `tsconfig.json` `paths` point types there. If a local `node_modules/` exists (CI), everything uses it normally. **Never `npm install` in the project folder.** Adding a dependency: edit package.json, then `npm run deps`, then add an alias in `vite.config.mjs` + a `paths` entry in `tsconfig.json`.
-Data pipeline (Python, uv — venv lives on C: per the root CLAUDE.md):
+`tools/run.mjs` / `vite.config.mjs` / tsconfig `paths` still support a `DEPS_DIR` outside the project (used while the project was on Google Drive, where npm can't write); with local `node_modules` they behave normally.
+
+Data pipeline:
 ```powershell
-$env:UV_PROJECT_ENVIRONMENT = "C:\venvs\ct-brain-anatomy"
+$env:UV_PROJECT_ENVIRONMENT = "C:envs\ct-brain-anatomy"
 cd pipeline; uv sync; uv run python run_all.py
 ```
-Pipeline outputs are committed to `public/data/` so the site never needs the pipeline at runtime.
+Pipeline outputs are committed to `public/data/` so the site never needs the pipeline at runtime. Run order: build_ct → build_labels → build_overlays → build_territories → build_vessels → build_meshes → check_labels.
 
 ## Architecture
 - **Vite + TypeScript**, no framework. `src/main.ts` boots: load manifests → sidebar → 2 slice viewers + 3D viewer → apply topic.
