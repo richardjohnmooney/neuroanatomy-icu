@@ -1,5 +1,6 @@
 // Loads the JSON manifests once; every panel receives the same AppData.
-import type { StructuresManifest, Structure, VolumesManifest, Vec3 } from './types';
+import type { BaseVolume, StructuresManifest, Structure, Topic, VolumesManifest, Vec3 } from './types';
+import { GHOST_OPACITY } from './state';
 
 export interface AppData {
   volumes: VolumesManifest;
@@ -39,9 +40,25 @@ export function displayName(s: Structure, p?: Vec3): string {
   return s.lateralised && p ? `${s.name} (${sideOf(p)})` : s.name;
 }
 
-/** Structures that belong to the active topic. */
+/** All groups listed for a topic: its own groups, then its context groups. */
+export function topicGroups(t: Topic): string[] {
+  return [...new Set([...t.groups, ...(t.context ?? [])])];
+}
+
+/** Structures listed for a topic (own + context groups). */
 export function topicStructures(data: AppData, topicId: string): Structure[] {
   const t = data.manifest.topics.find((x) => x.id === topicId);
   if (!t) return [];
-  return data.manifest.structures.filter((s) => t.groups.includes(s.group));
+  const gs = topicGroups(t);
+  return data.manifest.structures.filter((s) => gs.includes(s.group));
+}
+
+/** Default CT (slice) colouring and 3D opacity for a group in a topic, for the given scan.
+ *  Context and `defaultHidden` groups start off the slices; scan `hideGroups` start off both. */
+export function groupDefaults(t: Topic, groupId: string, scan?: BaseVolume): { onCt: boolean; op3d: number } {
+  if (scan?.hideGroups?.includes(groupId)) return { onCt: false, op3d: 0 };
+  const isContext = (t.context ?? []).includes(groupId) && !t.groups.includes(groupId);
+  const onCt = !isContext && !(t.defaultHidden ?? []).includes(groupId);
+  const op3d = t.opacity3d?.[groupId] ?? (isContext ? GHOST_OPACITY : 1);
+  return { onCt, op3d };
 }

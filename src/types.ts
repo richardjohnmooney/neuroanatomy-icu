@@ -54,10 +54,12 @@ export interface Topic {
   focus?: Vec3;           // default crosshair, MNI mm
   plane?: Plane;          // default plane for this topic
   scan?: string;          // default BaseVolume.id for this topic (else the first base volume)
-  defaultHidden?: string[]; // groups listed in `groups` but switched off when the topic opens
-  /** Context groups: shown only in the 3D model as a translucent "ghost" (never coloured on slices),
-   *  so the topic's own structures stand out. Each can be toggled in the sidebar. */
+  defaultHidden?: string[]; // groups listed in `groups` but not coloured on the slices when the topic opens (3D unaffected)
+  /** Context groups: listed after `groups`, off on the slices and faint (GHOST_OPACITY) in 3D by default,
+   *  so the topic's own structures stand out. */
   context?: string[];
+  /** Default 3D opacity per group id for this topic (overrides 1 / GHOST_OPACITY), e.g. territories 0.25. */
+  opacity3d?: Record<string, number>;
   intro: string;          // shown in info panel when no structure selected
 }
 export interface StructuresManifest {

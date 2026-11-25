@@ -112,7 +112,7 @@
         5
       ],
       "plane": "coronal",
-      "intro": "The dura forms two rigid sheets that divide the cranial cavity: the falx cerebri between the hemispheres and the tentorium cerebelli between the cerebrum and cerebellum. Because the skull and these folds cannot stretch, a mass pushes brain past their free edges — herniation. Supratentorial masses herniate under the falx (subfalcine) or down through the tentorial notch (uncal/central); posterior fossa masses push up through the notch or down through the foramen magnum. Try the coronal view. In 3D the brain is shown faintly for context — toggle it under 'Context' in the structure list.",
+      "intro": "The dura forms two rigid sheets that divide the cranial cavity: the falx cerebri between the hemispheres and the tentorium cerebelli between the cerebrum and cerebellum. Because the skull and these folds cannot stretch, a mass pushes brain past their free edges — herniation. Supratentorial masses herniate under the falx (subfalcine) or down through the tentorial notch (uncal/central); posterior fossa masses push up through the notch or down through the foramen magnum. Try the coronal view. In 3D the brain is shown faintly for context — adjust it with the 3D sliders in the structure list.",
       "context": [
         "lobes",
         "posterior-fossa"
@@ -135,12 +135,15 @@
         -12
       ],
       "plane": "axial",
-      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. This tab opens on a simulated CT angiogram (switch to the venogram or the plain CT with 'Scan'); use 'Vessel slab' to follow vessels across slices. Switch on 'Arterial territories' to see which territory a hypodensity belongs to. Colours are matched: each arterial territory is a lighter tint of the artery that supplies it (ACA green, MCA amber, lenticulostriate orange, PCA violet, vertebrobasilar pink); the ICA is red and the veins are blues.",
+      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. This tab opens on a simulated CT angiogram (switch to the venogram or the plain CT with 'Scan'); use 'Vessel slab' to follow vessels across slices. The arterial territories are shown as translucent volumes in 3D; tick 'Arterial territories' (or a single territory) to colour them on the CT and see which territory a hypodensity belongs to. Colours are matched: each arterial territory is a lighter tint of the artery that supplies it (ACA green, MCA amber, lenticulostriate orange, PCA violet, vertebrobasilar pink); the ICA is red and the veins are blues.",
       "context": [
         "lobes",
         "posterior-fossa"
       ],
-      "scan": "cta"
+      "scan": "cta",
+      "opacity3d": {
+        "territories": 0.25
+      }
     }
   ],
   "structures": [

@@ -1,7 +1,7 @@
 // Topic tabs, view controls, structure list, info card, about dialog. DOM only; talks via the store.
-import { GHOST_OPACITY, state, setState, subscribe } from '../state';
-import type { Plane, Vec3 } from '../types';
-import { type AppData, topicStructures } from '../data';
+import { state, setState, subscribe } from '../state';
+import type { BaseVolume, Plane, Topic, Vec3 } from '../types';
+import { type AppData, groupDefaults, topicGroups, topicStructures } from '../data';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -13,7 +13,7 @@ export function initSidebar(data: AppData): void {
   initAbout(data);
 
   subscribe((_s, changed) => {
-    if (changed.has('topicId') || changed.has('visible') || changed.has('ghost')) renderList(data);
+    if (changed.has('topicId') || changed.has('visible')) renderList(data);
     if (changed.has('selectedId') || changed.has('hoverId')) markList();
     if (changed.has('selectedId') || changed.has('topicId')) renderInfo(data);
     if (changed.has('plane')) markPlane();
@@ -21,21 +21,29 @@ export function initSidebar(data: AppData): void {
   });
 }
 
-/** Apply a topic: visible = its structures, jump to its focus. */
+/** CT (slice) visibility and 3D opacity for every structure of a topic, given the scan. */
+function topicDefaults(data: AppData, t: Topic, scan?: BaseVolume): { visible: Set<string>; opacity3d: Record<string, number> } {
+  const visible = new Set<string>();
+  const opacity3d: Record<string, number> = {};
+  for (const s of topicStructures(data, t.id)) {
+    const d = groupDefaults(t, s.group, scan);
+    if (d.onCt) visible.add(s.id);
+    if (d.op3d > 0) opacity3d[s.id] = d.op3d;
+  }
+  return { visible, opacity3d };
+}
+
+/** Apply a topic: its default slice colouring and 3D opacities, scan, focus and plane. */
 export function applyTopic(data: AppData, topicId: string): void {
   const t = data.manifest.topics.find((x) => x.id === topicId);
   if (!t) return;
   const vols = data.volumes.baseVolumes;
   const scan = vols.find((v) => v.id === t.scan) ?? vols[0];
-  const off = new Set([...(t.defaultHidden ?? []), ...(scan.hideGroups ?? [])]);
-  const ctx = new Set(t.context ?? []);
   const scanPatch = scan.id === state.baseVolumeId ? {} : { baseVolumeId: scan.id, windowId: scan.windows[0].id };
   setState({
     ...scanPatch,
     topicId,
-    visible: new Set(topicStructures(data, topicId).filter((s) => !off.has(s.group)).map((s) => s.id)),
-    ghost: new Set(data.manifest.structures.filter((s) => ctx.has(s.group)).map((s) => s.id)),
-    opacity3d: {},
+    ...topicDefaults(data, t, scan),
     selectedId: null,
     ...(t.focus ? { crosshair: t.focus } : {}),
     ...(t.plane ? { plane: t.plane } : {}),
@@ -150,19 +158,22 @@ function initControls(data: AppData): void {
     const vols = data.volumes.baseVolumes;
     const vol = vols.find((v) => v.id === scan.value);
     if (!vol) return;
-    // Re-apply scan-specific defaults to the current topic's groups: groups the old scan hid come
-    // back, groups the new scan hides go (e.g. CTA → arteries only, CTV → veins only, CT → both).
+    // Groups hidden by the old or new scan (e.g. veins on CTA, arteries on CTV) go back to their
+    // defaults for the new scan, on the slices and in 3D; everything else keeps the user's settings.
     const prev = vols.find((v) => v.id === state.baseVolumeId);
     const topic = data.manifest.topics.find((x) => x.id === state.topicId);
-    const groups = new Set(topic?.groups ?? []);
-    const hideNew = new Set((vol.hideGroups ?? []).filter((g) => groups.has(g)));
-    const showAgain = new Set((prev?.hideGroups ?? []).filter((g) => groups.has(g) && !hideNew.has(g) && !(topic?.defaultHidden ?? []).includes(g)));
+    const affected = new Set([...(prev?.hideGroups ?? []), ...(vol.hideGroups ?? [])]);
     const visible = new Set(state.visible);
-    for (const s of data.manifest.structures) {
-      if (hideNew.has(s.group)) visible.delete(s.id);
-      else if (showAgain.has(s.group)) visible.add(s.id);
+    const opacity3d = { ...state.opacity3d };
+    if (topic) {
+      for (const s of topicStructures(data, topic.id)) {
+        if (!affected.has(s.group)) continue;
+        const d = groupDefaults(topic, s.group, vol);
+        if (d.onCt) visible.add(s.id); else visible.delete(s.id);
+        if (d.op3d > 0) opacity3d[s.id] = d.op3d; else delete opacity3d[s.id];
+      }
     }
-    setState({ baseVolumeId: vol.id, windowId: vol.windows[0].id, visible }, 'ui');
+    setState({ baseVolumeId: vol.id, windowId: vol.windows[0].id, visible, opacity3d }, 'ui');
   };
   win.onchange = () => setState({ windowId: win.value }, 'ui');
   const caption = document.querySelector('#viewer-ct figcaption span');
@@ -229,12 +240,12 @@ function markPlane(): void {
 // Group slider sets all its structures; a structure slider updates the group slider to the mean.
 // Values go to state.opacity3d (only the 3D model uses them) and never re-render the list, so
 // dragging stays smooth.
-function opacityOf(id: string, def: number): number {
-  return state.opacity3d[id] ?? def;
+function opacityOf(id: string): number {
+  return state.opacity3d[id] ?? 0;
 }
 function setOpacity(ids: string[], v: number): void {
   const next = { ...state.opacity3d };
-  for (const id of ids) next[id] = v;
+  for (const id of ids) { if (v > 0) next[id] = v; else delete next[id]; }
   setState({ opacity3d: next }, 'ui');
 }
 function makeSlider(value: number, title: string): HTMLInputElement {
@@ -268,7 +279,11 @@ function renderList(data: AppData): void {
   host.replaceChildren();
   const topic = data.manifest.topics.find((t) => t.id === state.topicId);
   if (!topic) return;
-  for (const gid of topic.groups) {
+  const legend = document.createElement('div');
+  legend.className = 'list-legend';
+  legend.textContent = '☑ coloured on the CT / slices · slider = 3D opacity (0 hides it in 3D)';
+  host.append(legend);
+  for (const gid of topicGroups(topic)) {
     const g = data.manifest.groups.find((x) => x.id === gid);
     const items = data.manifest.structures.filter((s) => s.group === gid);
     if (!g || !items.length) continue;
@@ -276,19 +291,30 @@ function renderList(data: AppData): void {
     box.className = 'group';
     const title = document.createElement('div');
     title.className = 'group-title';
-    const allOn = items.every((s) => state.visible.has(s.id));
-    const tog = document.createElement('button');
-    tog.type = 'button'; tog.textContent = allOn ? 'hide' : 'show';
-    tog.onclick = () => {
+    // Group checkbox: on the slices for all members (indeterminate when mixed).
+    const onCount = items.filter((s) => state.visible.has(s.id)).length;
+    const gcb = document.createElement('input');
+    gcb.type = 'checkbox';
+    gcb.checked = onCount === items.length;
+    gcb.indeterminate = onCount > 0 && onCount < items.length;
+    gcb.title = `Colour all ${g.name.toLowerCase()} on the CT / slices`;
+    gcb.onchange = () => {
       const v = new Set(state.visible);
-      for (const s of items) { if (allOn) v.delete(s.id); else v.add(s.id); }
+      for (const s of items) { if (gcb.checked) v.add(s.id); else v.delete(s.id); }
       setState({ visible: v }, 'ui');
     };
     const gname = document.createElement('span');
     gname.className = 'group-name';
     gname.textContent = g.name;
-    const gSlider = makeSlider(items.reduce((a, s) => a + opacityOf(s.id, 1), 0) / items.length, `3D opacity — all ${g.name.toLowerCase()}`);
-    title.append(gname, gSlider, tog);
+    if (!groupDefaults(topic, gid).onCt && (topic.context ?? []).includes(gid)) {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = 'context';
+      tag.title = 'Shown faintly in 3D for orientation; tick to colour it on the slices too';
+      gname.append(' ', tag);
+    }
+    const gSlider = makeSlider(items.reduce((a, s) => a + opacityOf(s.id), 0) / items.length, `3D opacity — all ${g.name.toLowerCase()}`);
+    title.append(gcb, gname, gSlider);
     box.append(title);
     const childSliders: { id: string; el: HTMLInputElement }[] = [];
     for (const s of items) {
@@ -297,7 +323,7 @@ function renderList(data: AppData): void {
       row.dataset.id = s.id;
       const cb = document.createElement('input');
       cb.type = 'checkbox'; cb.checked = state.visible.has(s.id);
-      cb.title = 'Show / hide';
+      cb.title = 'Colour on the CT / slices';
       cb.onclick = (e) => e.stopPropagation();
       cb.onchange = () => {
         const v = new Set(state.visible);
@@ -310,7 +336,7 @@ function renderList(data: AppData): void {
       name.className = 'item-name';
       name.textContent = s.name;
       name.title = s.name;
-      const sl = makeSlider(opacityOf(s.id, 1), `3D opacity — ${s.name}`);
+      const sl = makeSlider(opacityOf(s.id), `3D opacity — ${s.name}`);
       childSliders.push({ id: s.id, el: sl });
       row.append(cb, sw, name, sl);
       row.onclick = () => setState({ selectedId: state.selectedId === s.id ? null : s.id }, 'list');
@@ -321,59 +347,7 @@ function renderList(data: AppData): void {
     linkSliders(gSlider, childSliders);
     host.append(box);
   }
-  renderContext(data, host, topic.context ?? []);
   markList();
-}
-
-/** Context groups: translucent in 3D only, one toggle per group. */
-function renderContext(data: AppData, host: HTMLElement, groupIds: string[]): void {
-  const groups = groupIds
-    .map((gid) => ({ g: data.manifest.groups.find((x) => x.id === gid), items: data.manifest.structures.filter((s) => s.group === gid) }))
-    .filter((x) => x.g && x.items.length);
-  if (!groups.length) return;
-  const box = document.createElement('div');
-  box.className = 'group context';
-  const title = document.createElement('div');
-  title.className = 'group-title';
-  title.textContent = 'Context (3D only, translucent)';
-  box.append(title);
-  for (const { g, items } of groups) {
-    const row = document.createElement('label');
-    row.className = 'structure-item';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = items.some((s) => state.ghost.has(s.id));
-    cb.onchange = () => {
-      const v = new Set(state.ghost);
-      for (const s of items) { if (cb.checked) v.add(s.id); else v.delete(s.id); }
-      setState({ ghost: v }, 'ui');
-    };
-    const sw = document.createElement('span');
-    sw.className = 'swatch ghost';
-    const name = document.createElement('span');
-    name.className = 'item-name';
-    name.textContent = g!.name;
-    const gSlider = makeSlider(items.reduce((a, s) => a + opacityOf(s.id, GHOST_OPACITY), 0) / items.length, `3D opacity — all ${g!.name.toLowerCase()}`);
-    row.append(cb, sw, name, gSlider);
-    box.append(row);
-    const childSliders: { id: string; el: HTMLInputElement }[] = [];
-    for (const s of items) {
-      const sub = document.createElement('div');
-      sub.className = 'structure-item sub';
-      const ssw = document.createElement('span');
-      ssw.className = 'swatch'; ssw.style.background = s.color;
-      const sname = document.createElement('span');
-      sname.className = 'item-name';
-      sname.textContent = s.name;
-      sname.title = s.name;
-      const sl = makeSlider(opacityOf(s.id, GHOST_OPACITY), `3D opacity — ${s.name}`);
-      childSliders.push({ id: s.id, el: sl });
-      sub.append(ssw, sname, sl);
-      box.append(sub);
-    }
-    linkSliders(gSlider, childSliders);
-  }
-  host.append(box);
 }
 
 function markList(): void {

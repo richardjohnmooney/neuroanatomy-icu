@@ -8,9 +8,8 @@ export interface AppState {
   topicId: string;
   baseVolumeId: string;         // which BaseVolume the left panel shows (CT now, MRI later)
   windowId: string;             // WindowPreset.id
-  visible: Set<string>;         // focus structure ids: coloured on slices, solid in 3D
-  ghost: Set<string>;           // context structure ids: translucent in 3D only, never on slices
-  opacity3d: Record<string, number>; // per-structure 3D opacity 0..1 set by sliders; missing = default (1, or ghost level)
+  visible: Set<string>;         // structure ids coloured on the slices (CT + stylised) — the list checkboxes
+  opacity3d: Record<string, number>; // structure id -> 3D opacity 0..1 (the list sliders); absent or 0 = hidden in 3D
   selectedId: string | null;    // structure shown in info card / highlighted
   hoverId: string | null;
   overlayOpacity: number;       // 0..1 colour over CT
@@ -21,7 +20,7 @@ export interface AppState {
   showCrosshair: boolean;       // draw crosshair lines on the slice views (position stays linked either way)
 }
 
-/** Default 3D opacity of context ("ghost") structures — faint so the topic's own structures dominate. */
+/** Default 3D opacity of a topic's context groups — faint so the topic's own structures dominate. */
 export const GHOST_OPACITY = 0.12;
 
 type Listener = (s: AppState, changed: Set<keyof AppState>) => void;
@@ -36,7 +35,6 @@ export const state: AppState = {
   baseVolumeId: 'ct',
   windowId: 'brain',
   visible: new Set(),
-  ghost: new Set(),
   opacity3d: {},
   selectedId: null,
   hoverId: null,
