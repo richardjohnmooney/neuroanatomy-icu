@@ -44,6 +44,10 @@
     {
       "id": "territories",
       "name": "Arterial territories"
+    },
+    {
+      "id": "herniation",
+      "name": "Herniation landmarks"
     }
   ],
   "topics": [
@@ -144,6 +148,28 @@
       "opacity3d": {
         "territories": 0.25
       }
+    },
+    {
+      "id": "herniation",
+      "name": "Herniation",
+      "groups": [
+        "dura",
+        "herniation",
+        "cisterns",
+        "posterior-fossa"
+      ],
+      "context": [
+        "lobes",
+        "arteries"
+      ],
+      "focus": [
+        0,
+        -14,
+        -18
+      ],
+      "plane": "axial",
+      "tutorial": "herniation",
+      "intro": "The skull is a rigid box divided by two stiff dural sheets: the falx and the tentorium. A growing mass pushes brain past their free edges or out through the foramen magnum — herniation. This topic shows the openings and what gets squeezed through each of them. Use the guided tutorial to present it, or explore freely."
     }
   ],
   "structures": [
@@ -946,6 +972,80 @@
       "lateralised": true,
       "notes": "Brainstem and cerebellum, supplied by the vertebral arteries (PICA), the basilar artery (perforators, AICA) and the superior cerebellar arteries.",
       "ctNotes": "Posterior circulation strokes are easily missed on CT (beam hardening). Cerebellar infarcts can swell and cause obstructive hydrocephalus or brainstem compression in the first few days — watch GCS closely."
+    },
+    {
+      "id": "uncus",
+      "name": "Uncus (medial temporal lobe)",
+      "group": "herniation",
+      "layer": "landmarks",
+      "labelValue": 1,
+      "color": "#ff3b6b",
+      "meshes": [
+        "uncus_L.glb",
+        "uncus_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "The hooked anteromedial tip of the parahippocampal gyrus, lying just above the free edge of the tentorium beside the midbrain. In uncal herniation it is pushed medially and down through the tentorial notch, compressing CN III (fixed dilated pupil on the same side), the PCA and the midbrain.",
+      "ctNotes": "Look for the medial temporal lobe bulging into, and effacing, the suprasellar and ambient cisterns on the side of the mass."
+    },
+    {
+      "id": "cerebral-peduncle",
+      "name": "Cerebral peduncle",
+      "group": "herniation",
+      "layer": "landmarks",
+      "labelValue": 2,
+      "color": "#ff9f1c",
+      "meshes": [
+        "cerebral-peduncle_L.glb",
+        "cerebral-peduncle_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "The anterior midbrain on each side, carrying the corticospinal tracts before they decussate in the medulla. When the midbrain is pushed sideways, the opposite peduncle can be pinned against the other tentorial edge (Kernohan notch), giving weakness on the same side as the mass — a false-localising sign.",
+      "ctNotes": "Sits between the interpeduncular cistern in front and the ambient cistern at the side."
+    },
+    {
+      "id": "oculomotor-nerve",
+      "name": "Oculomotor nerve (CN III)",
+      "group": "herniation",
+      "layer": "landmarks",
+      "labelValue": 3,
+      "color": "#ffe14d",
+      "meshes": [
+        "oculomotor-nerve_L.glb",
+        "oculomotor-nerve_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "Leaves the midbrain in the interpeduncular fossa, runs forward between the PCA and superior cerebellar artery, alongside the PCom, past the tentorial edge to the cavernous sinus. Its parasympathetic pupillary fibres lie on the outside, so compression by the herniating uncus (or a PCom aneurysm) dilates the pupil first.",
+      "ctNotes": "Not visible on CT — drawn here to show why the pupil is the early warning sign."
+    },
+    {
+      "id": "cerebellar-tonsil",
+      "name": "Cerebellar tonsil",
+      "group": "herniation",
+      "layer": "landmarks",
+      "labelValue": 4,
+      "color": "#00d084",
+      "meshes": [
+        "cerebellar-tonsil_L.glb",
+        "cerebellar-tonsil_R.glb"
+      ],
+      "lateralised": true,
+      "notes": "The rounded inferomedial lobules of the cerebellum, sitting just above the foramen magnum either side of the medulla. In tonsillar herniation they are forced through the foramen magnum and compress the medulla — respiratory arrest, Cushing’s response (hypertension, bradycardia) and death.",
+      "ctNotes": "Effacement of the cisterna magna and crowding at the foramen magnum suggest tonsillar descent; MRI shows it best."
+    },
+    {
+      "id": "foramen-magnum",
+      "name": "Foramen magnum",
+      "group": "herniation",
+      "layer": "landmarks",
+      "labelValue": 5,
+      "color": "#e5e5e5",
+      "meshes": [
+        "foramen-magnum.glb"
+      ],
+      "lateralised": false,
+      "notes": "The opening in the occipital bone through which the medulla joins the spinal cord (with the vertebral arteries and accessory nerves). It is the last exit from the skull: the floor of the posterior fossa compartment.",
+      "ctNotes": "Best seen on bone window, axial and sagittal: the basion in front, the opisthion behind."
     }
   ]
 }

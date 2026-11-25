@@ -1,5 +1,5 @@
 // Single app store with tiny pub/sub. All panels read from and write to this; none talk to each other directly.
-import type { Plane, Vec3 } from './types';
+import type { Arrow, CameraView, Plane, Vec3 } from './types';
 
 export interface AppState {
   crosshair: Vec3;              // MNI mm
@@ -18,6 +18,9 @@ export interface AppState {
   radiological: boolean;        // true: patient left on screen right (CT convention)
   vesselSlab: number;           // mm either side of the slice from which vessels are projected (0 = exact slice)
   showCrosshair: boolean;       // draw crosshair lines on the slice views (position stays linked either way)
+  arrows: Arrow[];              // annotation arrows (tutorials); [] = none
+  camera3d: CameraView | null;
+  slicePlane3d: boolean;        // show the translucent slice-plane marker in 3D (tutorials hide it for close-ups)  // 3D camera request; the 3D panel glides to each new object (user orbiting doesn't write back)
 }
 
 /** Default 3D opacity of a topic's context groups — faint so the topic's own structures dominate. */
@@ -44,6 +47,9 @@ export const state: AppState = {
   radiological: true,
   vesselSlab: 3,
   showCrosshair: false,
+  arrows: [],
+  camera3d: null,
+  slicePlane3d: true,
 };
 
 /** Merge a patch and notify. Pass `source` to let the originating panel skip its own echo. */

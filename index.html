@@ -69,6 +69,30 @@
         <figcaption><span>3D model</span><span class="readout" id="readout-3d"></span></figcaption>
         <div id="container-3d" class="three-host"></div>
       </figure>
+      <div id="tut-bar" class="tut-bar" hidden role="region" aria-label="Tutorial">
+        <div class="tut-head">
+          <span id="tut-name" class="tut-name"></span>
+          <span id="tut-count" class="tut-count"></span>
+          <span id="tut-dots" class="tut-dots"></span>
+          <span class="tut-tools">
+            <button id="tut-reset" type="button" class="ghost" title="Reset this step's view">↺</button>
+            <button id="tut-notes" type="button" class="ghost" title="Speaker notes (N) — opens a window you can drag to your own screen">Notes</button>
+            <button id="tut-present" type="button" class="ghost" title="Presenter mode: hide the side panes (P)">Present</button>
+            <button id="tut-hide" type="button" class="ghost" title="Hide / show the caption (H)">▾</button>
+            <button id="tut-exit" type="button" class="ghost" title="Exit tutorial (Esc)">✕</button>
+          </span>
+        </div>
+        <div class="tut-body">
+          <button id="tut-prev" type="button" class="tut-nav" title="Previous (←)">‹</button>
+          <div class="tut-text">
+            <div id="tut-title" class="tut-title"></div>
+            <div id="tut-caption" class="tut-caption"></div>
+            <div id="tut-notes-text" class="tut-notes-text"></div>
+          </div>
+          <button id="tut-reveal" type="button" class="tut-reveal" title="Reveal the answer (R)">Reveal</button>
+          <button id="tut-next" type="button" class="tut-nav" title="Next (→ / Space)">›</button>
+        </div>
+      </div>
     </section>
 
     <aside class="info" id="info-panel" aria-live="polite"></aside>

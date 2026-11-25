@@ -35,7 +35,7 @@ def mask_to_mesh(mask, affine, sigma=0.8):
 
 
 # Per-layer Gaussian sigma before marching cubes (thin sheets like dura/sulci need less smoothing).
-SIGMA = {"anatomy": 0.8, "sulci": 0.6, "dura": 0.6, "territories": 0.8}
+SIGMA = {"anatomy": 0.8, "sulci": 0.6, "dura": 0.6, "territories": 0.8, "landmarks": 0.7}
 # Layers whose meshes are written by their own builder (e.g. smooth tubes from centrelines).
 SELF_MESHED = {"vessels"}
 

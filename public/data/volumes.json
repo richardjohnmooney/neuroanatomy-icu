@@ -128,6 +128,11 @@
       "id": "vessels",
       "label": "Vessels",
       "file": "labels_vessels.nii.gz"
+    },
+    {
+      "id": "landmarks",
+      "label": "Herniation landmarks",
+      "file": "labels_landmarks.nii.gz"
     }
   ]
 }

@@ -1,0 +1,723 @@
+{
+ "tutorials": [
+  {
+   "id": "herniation",
+   "name": "Herniation — guided tour",
+   "description": "Presenter-led tour of the openings in the dura and skull, and what herniates through each. ← → to step, N for speaker notes.",
+   "steps": [
+    {
+     "title": "A rigid box with two stiff sheets",
+     "caption": "Skull + falx + tentorium make three compartments. When volume rises, brain can only escape through the gaps.",
+     "notes": "Monro–Kellie: blood, CSF and brain share a fixed volume. Once CSF and venous blood have been displaced, pressure climbs steeply and brain moves along pressure gradients — towards the openings in the dural sheets.\n\nAsk: which way would a right temporal haematoma push things?",
+     "topic": "herniation",
+     "scan": "ct",
+     "window": "brain",
+     "layout": "single",
+     "plane": "coronal",
+     "crosshair": [
+      0,
+      -30,
+      5
+     ],
+     "show": [
+      "dura"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "falx-cerebri": 1,
+      "tentorium-cerebelli": 1
+     },
+     "camera": {
+      "dir": [
+       1,
+       1.4,
+       0.8
+      ]
+     }
+    },
+    {
+     "title": "The exits",
+     "caption": "Under the falx · through the tentorial notch · out of the foramen magnum.",
+     "notes": "Name the herniations by the exit used: subfalcine (under the falx), transtentorial — descending (uncal / central) or ascending (upward) — and tonsillar (foramen magnum). Plus external herniation through a craniectomy defect.",
+     "plane": "sagittal",
+     "crosshair": [
+      0,
+      -25,
+      -10
+     ],
+     "show": [
+      "dura",
+      "foramen-magnum",
+      "midbrain",
+      "medulla"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "falx-cerebri": 0.9,
+      "tentorium-cerebelli": 1,
+      "foramen-magnum": 1,
+      "midbrain": 1,
+      "pons": 1,
+      "medulla": 1
+     },
+     "camera": {
+      "dir": [
+       -1,
+       0.15,
+       0.25
+      ],
+      "target": [
+       0,
+       -25,
+       -10
+      ],
+      "zoom": 1.15
+     },
+     "arrows": [
+      {
+       "from": [
+        0,
+        40,
+        55
+       ],
+       "to": [
+        0,
+        12,
+        33
+       ],
+       "label": "Under the falx",
+       "color": "#ff4d6d",
+       "planes": [
+        "sagittal"
+       ]
+      },
+      {
+       "from": [
+        0,
+        -75,
+        25
+       ],
+       "to": [
+        0,
+        -42,
+        0
+       ],
+       "label": "Tentorial notch",
+       "color": "#ffb703",
+       "planes": [
+        "sagittal"
+       ]
+      },
+      {
+       "from": [
+        0,
+        -85,
+        -55
+       ],
+       "to": [
+        0,
+        -55,
+        -67
+       ],
+       "label": "Foramen magnum",
+       "color": "#00d084",
+       "planes": [
+        "sagittal"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Subfalcine herniation",
+     "caption": "A right-sided mass pushes the cingulate gyrus under the free edge of the falx, across the midline.",
+     "notes": "Commonest herniation. The falx is shallow anteriorly, so the cingulate slides under its free edge. Measure midline shift at the septum pellucidum (foramen of Monro level). The opposite lateral ventricle can be trapped and dilate.",
+     "plane": "coronal",
+     "crosshair": [
+      0,
+      5,
+      25
+     ],
+     "show": [
+      "falx-cerebri",
+      "limbic-lobe",
+      "lateral-ventricle",
+      "corpus-callosum"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "falx-cerebri": 0.7,
+      "limbic-lobe": 1,
+      "lateral-ventricle": 0.5,
+      "corpus-callosum": 0.6
+     },
+     "camera": {
+      "dir": [
+       0.2,
+       1,
+       0.35
+      ],
+      "target": [
+       0,
+       0,
+       22
+      ],
+      "zoom": 1.6
+     },
+     "arrows": [
+      {
+       "from": [
+        22,
+        5,
+        36
+       ],
+       "to": [
+        -6,
+        5,
+        27
+       ],
+       "label": "mass effect",
+       "color": "#ff4d6d",
+       "planes": [
+        "coronal",
+        "axial"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Subfalcine herniation — what is at risk?",
+     "caption": "",
+     "show": [
+      "falx-cerebri",
+      "limbic-lobe",
+      "arteries"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "falx-cerebri": 0.5,
+      "limbic-lobe": 0.4,
+      "arteries": 1
+     },
+     "arrows": [
+      {
+       "from": [
+        22,
+        5,
+        36
+       ],
+       "to": [
+        -6,
+        5,
+        27
+       ],
+       "color": "#ff4d6d",
+       "planes": [
+        "coronal",
+        "axial"
+       ]
+      }
+     ],
+     "question": {
+      "prompt": "Click the artery that can be pinched against the falx.",
+      "answer": [
+       "anterior-cerebral-artery"
+      ],
+      "reveal": "The anterior cerebral (pericallosal) artery — infarction gives contralateral leg weakness."
+     },
+     "notes": "Answer: ACA / pericallosal artery runs over the corpus callosum right under the falx edge. Territory = medial frontal and parietal lobes → leg > arm weakness, abulia, incontinence."
+    },
+    {
+     "title": "Uncal herniation",
+     "caption": "The uncus (medial temporal lobe) is pushed over the tentorial edge into the notch beside the midbrain.",
+     "notes": "Typically a lateral middle cranial fossa mass — temporal haematoma, EDH, SDH. The uncus fills the suprasellar cistern from the side and squeezes the midbrain. On CT: asymmetric, effaced suprasellar and ambient cisterns.",
+     "plane": "axial",
+     "crosshair": [
+      0,
+      -8,
+      -22
+     ],
+     "slicePlane3d": false,
+     "show": [
+      "uncus",
+      "tentorium-cerebelli",
+      "midbrain",
+      "suprasellar-cistern",
+      "ambient-cistern"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "tentorium-cerebelli": 0.6,
+      "uncus": 1,
+      "midbrain": 1,
+      "pons": 0.5,
+      "suprasellar-cistern": 0.7
+     },
+     "camera": {
+      "dir": [
+       0.35,
+       0.25,
+       -1
+      ],
+      "target": [
+       0,
+       -12,
+       -20
+      ],
+      "zoom": 2.2
+     },
+     "arrows": [
+      {
+       "from": [
+        32,
+        -6,
+        -22
+       ],
+       "to": [
+        12,
+        -8,
+        -22
+       ],
+       "label": "uncus",
+       "color": "#ff4d6d",
+       "planes": [
+        "axial",
+        "coronal"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "CN III — the blown pupil",
+     "caption": "CN III runs right past the uncus and the tentorial edge. Compression → fixed, dilated pupil on the side of the mass.",
+     "notes": "The pupillomotor (parasympathetic) fibres lie on the outside of the nerve, so the pupil goes before the eye movements. A unilateral fixed dilated pupil in a drowsy patient = uncal herniation until proven otherwise. (A PCom aneurysm compresses the same nerve.)",
+     "crosshair": [
+      10,
+      -8,
+      -21
+     ],
+     "show": [
+      "uncus",
+      "oculomotor-nerve",
+      "tentorium-cerebelli",
+      "midbrain",
+      "posterior-cerebral-artery",
+      "posterior-communicating-artery"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "tentorium-cerebelli": 0.35,
+      "uncus": 0.6,
+      "oculomotor-nerve": 1,
+      "midbrain": 1,
+      "pons": 0.6,
+      "posterior-cerebral-artery": 1,
+      "posterior-communicating-artery": 1,
+      "internal-carotid-artery": 1
+     },
+     "camera": {
+      "dir": [
+       0.3,
+       0.45,
+       -1
+      ],
+      "target": [
+       8,
+       -10,
+       -20
+      ],
+      "zoom": 3.2
+     },
+     "select": "oculomotor-nerve",
+     "arrows": [
+      {
+       "from": [
+        26,
+        -5,
+        -23
+       ],
+       "to": [
+        13,
+        -6,
+        -21
+       ],
+       "color": "#ff4d6d",
+       "planes": [
+        "axial",
+        "coronal"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kernohan notch",
+     "caption": "The midbrain is shoved sideways and the opposite cerebral peduncle is notched by the other tentorial edge.",
+     "notes": "Result: hemiparesis on the SAME side as the mass — a false-localising sign. The pupil is still usually on the side of the mass, so trust the pupil (and the scan) over the limbs for lateralising.",
+     "crosshair": [
+      0,
+      -21,
+      -12
+     ],
+     "show": [
+      "cerebral-peduncle",
+      "midbrain",
+      "tentorium-cerebelli",
+      "ambient-cistern"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "tentorium-cerebelli": 0.8,
+      "cerebral-peduncle": 1,
+      "midbrain": 0.4,
+      "pons": 0.4
+     },
+     "camera": {
+      "dir": [
+       0.1,
+       -0.2,
+       1
+      ],
+      "target": [
+       0,
+       -22,
+       -12
+      ],
+      "zoom": 2.6
+     },
+     "arrows": [
+      {
+       "from": [
+        24,
+        -20,
+        -12
+       ],
+       "to": [
+        6,
+        -20,
+        -12
+       ],
+       "label": "mass",
+       "color": "#ff4d6d",
+       "planes": [
+        "axial",
+        "coronal"
+       ]
+      },
+      {
+       "from": [
+        -30,
+        -10,
+        -8
+       ],
+       "to": [
+        -13,
+        -18,
+        -11
+       ],
+       "label": "L peduncle vs tentorium",
+       "color": "#ffb703",
+       "planes": [
+        "axial"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Which way does it point?",
+     "caption": "",
+     "question": {
+      "prompt": "Right subdural, right pupil fixed — but the RIGHT arm and leg are weak. Click the structure that explains it.",
+      "answer": [
+       "cerebral-peduncle"
+      ],
+      "reveal": "The LEFT cerebral peduncle, crushed against the left tentorial edge (Kernohan notch) — so the weakness is on the side of the mass."
+     },
+     "notes": "Corticospinal fibres in the left peduncle supply the right body (they cross in the medulla)."
+    },
+    {
+     "title": "Central (descending) herniation",
+     "caption": "Diffuse or bilateral swelling drives the diencephalon and midbrain straight down through the notch.",
+     "notes": "Progressive: drowsiness → small reactive pupils → Cheyne–Stokes → decorticate then decerebrate posturing. Stretched basilar perforators bleed into the midbrain/pons (Duret haemorrhages) — usually a terminal sign.",
+     "plane": "sagittal",
+     "crosshair": [
+      0,
+      -20,
+      -12
+     ],
+     "show": [
+      "third-ventricle",
+      "midbrain",
+      "pons",
+      "cisterns",
+      "basilar-artery",
+      "tentorium-cerebelli"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "thalamus": 0.5,
+      "midbrain": 1,
+      "pons": 1,
+      "medulla": 1,
+      "third-ventricle": 0.8,
+      "basilar-artery": 1,
+      "tentorium-cerebelli": 0.4,
+      "cisterns": 0.35
+     },
+     "camera": {
+      "dir": [
+       -1,
+       0.1,
+       0.15
+      ],
+      "target": [
+       0,
+       -20,
+       -12
+      ],
+      "zoom": 2
+     },
+     "arrows": [
+      {
+       "from": [
+        0,
+        -14,
+        22
+       ],
+       "to": [
+        0,
+        -20,
+        -4
+       ],
+       "label": "diencephalon",
+       "color": "#ff4d6d",
+       "planes": [
+        "sagittal",
+        "coronal"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "On CT: watch the cisterns",
+     "caption": "Suprasellar, ambient and quadrigeminal cisterns are the CSF cushion round the notch. Losing them = herniation until proven otherwise.",
+     "notes": "CT check for raised ICP: midline shift, size of the lateral and 4th ventricles, basal cisterns (are they black?), sulci (effaced?), grey–white differentiation. Compare left vs right ambient wings.",
+     "plane": "axial",
+     "crosshair": [
+      0,
+      -15,
+      -12
+     ],
+     "overlayOpacity": 0.55,
+     "show": [
+      "cisterns"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "cisterns": 1,
+      "midbrain": 0.6
+     },
+     "camera": {
+      "dir": [
+       0.05,
+       0.1,
+       1
+      ],
+      "target": [
+       0,
+       -18,
+       -12
+      ],
+      "zoom": 2.4
+     }
+    },
+    {
+     "title": "Find the cistern",
+     "caption": "",
+     "question": {
+      "prompt": "Click the cistern that wraps around the side of the midbrain — the first to go asymmetric in uncal herniation.",
+      "answer": [
+       "ambient-cistern"
+      ],
+      "reveal": "The ambient cistern — the “wings” beside the midbrain linking the suprasellar cistern in front to the quadrigeminal cistern behind."
+     },
+     "notes": "Hover on the CT to see names. Answer: ambient cistern."
+    },
+    {
+     "title": "Upward herniation",
+     "caption": "A posterior fossa mass pushes the superior vermis UP through the notch, compressing the midbrain and aqueduct.",
+     "notes": "Cerebellar haemorrhage or infarct. Quadrigeminal cistern effaced; aqueduct obstructed → obstructive hydrocephalus. Draining CSF from above (EVD) can worsen the upward pressure gradient — posterior fossa decompression is the definitive treatment.",
+     "plane": "sagittal",
+     "crosshair": [
+      0,
+      -50,
+      -20
+     ],
+     "overlayOpacity": 0.45,
+     "show": [
+      "cerebellum",
+      "tentorium-cerebelli",
+      "quadrigeminal-cistern",
+      "cerebral-aqueduct",
+      "fourth-ventricle"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "cerebellum": 0.5,
+      "tentorium-cerebelli": 0.4,
+      "quadrigeminal-cistern": 1,
+      "cerebral-aqueduct": 1,
+      "fourth-ventricle": 1,
+      "midbrain": 0.7
+     },
+     "camera": {
+      "dir": [
+       -1,
+       -0.5,
+       0.4
+      ],
+      "target": [
+       0,
+       -45,
+       -15
+      ],
+      "zoom": 1.8
+     },
+     "arrows": [
+      {
+       "from": [
+        0,
+        -62,
+        -38
+       ],
+       "to": [
+        0,
+        -48,
+        -8
+       ],
+       "label": "vermis",
+       "color": "#ff4d6d",
+       "planes": [
+        "sagittal",
+        "coronal"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Tonsillar herniation",
+     "caption": "The cerebellar tonsils are forced down through the foramen magnum and compress the medulla.",
+     "notes": "Respiratory arrest, Cushing response (hypertension + bradycardia + irregular breathing), death. The reason LP is dangerous with a mass lesion or effaced cisterns. CT clue: effaced cisterna magna, crowded foramen magnum.",
+     "crosshair": [
+      0,
+      -50,
+      -60
+     ],
+     "show": [
+      "cerebellar-tonsil",
+      "foramen-magnum",
+      "medulla",
+      "cisterna-magna"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "cerebellum": 0.2,
+      "cerebellar-tonsil": 1,
+      "foramen-magnum": 1,
+      "medulla": 1,
+      "pons": 0.6
+     },
+     "camera": {
+      "dir": [
+       -1,
+       -0.7,
+       -0.35
+      ],
+      "target": [
+       0,
+       -48,
+       -60
+      ],
+      "zoom": 2.6
+     },
+     "arrows": [
+      {
+       "from": [
+        0,
+        -58,
+        -44
+       ],
+       "to": [
+        0,
+        -54,
+        -70
+       ],
+       "label": "tonsils",
+       "color": "#ff4d6d",
+       "planes": [
+        "sagittal",
+        "coronal"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "What gets squeezed?",
+     "caption": "",
+     "question": {
+      "prompt": "Click the structure whose compression causes apnoea in tonsillar herniation.",
+      "answer": [
+       "medulla"
+      ],
+      "reveal": "The medulla — respiratory and cardiovascular centres. Coning is usually fatal."
+     },
+     "notes": "Answer: medulla."
+    },
+    {
+     "title": "Summary: four exits",
+     "caption": "Under the falx · down through the notch (uncal, central) · up through the notch · out of the foramen magnum.",
+     "notes": "Close with the CT checklist: midline shift, ventricles (trapped? hydrocephalus?), basal cisterns, 4th ventricle and cisterna magna, sulci. Clinical: pupils, GCS trend, Cushing response.",
+     "layout": "multi",
+     "crosshair": [
+      0,
+      -20,
+      -15
+     ],
+     "overlayOpacity": 0.5,
+     "slicePlane3d": true,
+     "show": [
+      "herniation",
+      "dura",
+      "cisterns"
+     ],
+     "show3d": {
+      "lobes": 0.08,
+      "posterior-fossa": 0.12,
+      "falx-cerebri": 0.5,
+      "tentorium-cerebelli": 0.8,
+      "herniation": 1,
+      "midbrain": 1,
+      "pons": 1,
+      "medulla": 1
+     },
+     "camera": {
+      "dir": [
+       1,
+       1.4,
+       0.8
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

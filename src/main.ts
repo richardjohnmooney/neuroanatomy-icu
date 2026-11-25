@@ -2,11 +2,13 @@ import './styles.css';
 import { loadData } from './data';
 import { state } from './state';
 import { initSidebar, applyTopic } from './ui/sidebar';
+import { initTutorials, openTutorialFromHash } from './ui/tutorial';
 import { createSliceViewer } from './viewers/sliceViewer';
 import { createModel3D } from './viewers/model3d';
 
 async function main() {
   const data = await loadData();
+  initTutorials(data);
   initSidebar(data);
 
   const el = (id: string) => document.getElementById(id)!;
@@ -29,6 +31,7 @@ async function main() {
   ]);
 
   applyTopic(data, state.topicId);
+  openTutorialFromHash(); // after the topic, so a #tutorial= link wins
 }
 
 main().catch((e) => {

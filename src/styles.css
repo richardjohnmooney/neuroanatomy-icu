@@ -173,3 +173,48 @@ dialog::backdrop { background: #000a; }
 .list-legend { font-size: 11px; color: var(--muted); margin: -2px 0 8px; line-height: 1.35; }
 .structure-list .group-title input[type=checkbox] { margin: 0; }
 .tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+
+/* Arrow annotations over the slice viewers */
+.viewer canvas.arrow-overlay { pointer-events: none; z-index: 1; }
+
+/* Tutorial player */
+.viewers { position: relative; }
+.tut-bar {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+  width: min(920px, calc(100% - 28px)); z-index: 5;
+  background: rgba(15, 18, 22, 0.92); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 8px 30px #0008; backdrop-filter: blur(6px);
+}
+.tut-bar[hidden] { display: none; }
+.tut-head { display: flex; align-items: center; gap: 10px; padding: 6px 10px 0 14px; font-size: 12px; color: var(--muted); }
+.tut-name { font-weight: 600; color: var(--accent); }
+.tut-dots { display: flex; gap: 4px; flex: 1; flex-wrap: wrap; }
+.tut-dot { width: 9px; height: 9px; padding: 0; border-radius: 50%; background: var(--border); border: 0; }
+.tut-dot.q { border-radius: 2px; }
+.tut-dot.on { background: var(--accent); }
+.tut-tools { display: flex; gap: 2px; }
+.tut-tools button { padding: 1px 7px; font-size: 12px; color: var(--muted); border-color: transparent; }
+.tut-tools button[aria-pressed="true"] { color: var(--accent); }
+.tut-body { display: flex; align-items: center; gap: 10px; padding: 4px 8px 10px; }
+.tut-nav { font-size: 28px; line-height: 1; padding: 6px 14px 10px; background: var(--surface-2); }
+.tut-nav:disabled { opacity: 0.3; cursor: default; }
+.tut-text { flex: 1; min-width: 0; }
+.tut-title { font-size: 20px; font-weight: 700; margin-bottom: 2px; }
+.tut-caption { font-size: 17px; line-height: 1.4; color: var(--text); }
+.tut-q { color: #ffd166; font-weight: 600; }
+.tut-feedback { display: block; margin-top: 4px; color: #ff9f9f; font-size: 15px; }
+.tut-feedback.ok { display: inline; color: #7ee2a8; font-weight: 700; margin: 0; }
+.tut-reveal { background: #ffd16622; border-color: #ffd166; color: #ffd166; }
+.tut-reveal[hidden] { display: none; }
+.tut-notes-text { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); color: var(--muted); font-size: 13px; white-space: pre-wrap; max-height: 22vh; overflow: auto; }
+body.tut-notes-open .tut-notes-text:not(:empty) { display: block; }
+body.tut-collapsed .tut-body { display: none; }
+body.tut-collapsed .tut-bar { width: auto; }
+/* leave room under the slices for the caption */
+body.tutorial-on:not(.tut-collapsed) .viewers { padding-bottom: 128px; }
+
+/* Presenter mode: hide side panes; viewers take the whole width */
+body.presenting .sidebar, body.presenting .info { display: none; }
+body.presenting .workspace, body.presenting.notes-collapsed .workspace { grid-template-columns: minmax(0, 1fr); }
+
+.tut-start { width: 100%; margin: 4px 0 12px; padding: 8px 10px; font-size: 15px; font-weight: 600; background: var(--accent); color: #001523; border-color: var(--accent); }

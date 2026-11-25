@@ -5,7 +5,7 @@ import type { AppData } from '../data';
 import { displayName } from '../data';
 import { state, setState, subscribe, currentSource } from '../state';
 import type { AppState } from '../state';
-import type { Plane, Structure, Vec3 } from '../types';
+import type { Arrow, Plane, Structure, Vec3 } from '../types';
 
 export interface SliceViewerOptions {
   canvas: HTMLCanvasElement; mode: 'base' | 'stylised'; data: AppData; readout: HTMLElement; sourceId: string;
@@ -51,6 +51,80 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
     readout.textContent = 'WebGL2 is not available - the slice viewer cannot run.';
     return { dispose() {} };
   }
+
+  // ---- annotation arrows: a 2D canvas over NiiVue, redrawn after every NiiVue draw -----------
+  const overlay = document.createElement('canvas');
+  overlay.className = 'arrow-overlay';
+  canvas.insertAdjacentElement('afterend', overlay);
+  const ctx = overlay.getContext('2d')!;
+  const AXIS: Record<number, { plane: Plane; inPlane: [number, number]; normal: number }> = {
+    [SLICE_TYPE.AXIAL]: { plane: 'axial', inPlane: [0, 1], normal: 2 },
+    [SLICE_TYPE.CORONAL]: { plane: 'coronal', inPlane: [0, 2], normal: 1 },
+    [SLICE_TYPE.SAGITTAL]: { plane: 'sagittal', inPlane: [1, 2], normal: 0 },
+  };
+  type Tile = { leftTopWidthHeight: number[]; axCorSag: number; leftTopMM: number[]; fovMM: number[] };
+  /** MNI mm -> canvas px within a 2D tile (projected onto the tile's plane). Same maths as NiiVue's frac2canvasPos. */
+  function toTile(t: Tile, p: Vec3): [number, number] {
+    const ax = AXIS[t.axCorSag];
+    const fx = (p[ax.inPlane[0]] - t.leftTopMM[0]) / t.fovMM[0];
+    const fy = (p[ax.inPlane[1]] - t.leftTopMM[1]) / t.fovMM[1];
+    const l = t.leftTopWidthHeight;
+    let x0 = l[0], w = l[2], sx = fx;
+    if (w < 0) { x0 += w; w = -w; sx = 1 - fx; }
+    return [x0 + sx * w, l[1] + (1 - fy) * l[3]];
+  }
+  function drawArrows(): void {
+    if (overlay.width !== canvas.width || overlay.height !== canvas.height) {
+      overlay.width = canvas.width; overlay.height = canvas.height;
+    }
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    const arrows: Arrow[] = state.arrows;
+    if (!arrows.length) return;
+    const dpr = canvas.width / Math.max(1, canvas.clientWidth);
+    const tiles = ((nv.scene as unknown as { screenSlices?: Tile[] }).screenSlices
+      ?? (nv as unknown as { screenSlices?: Tile[] }).screenSlices ?? []) as Tile[];
+    for (const t of tiles) {
+      const ax = AXIS[t.axCorSag];
+      if (!ax || !t.fovMM || t.leftTopWidthHeight.length < 4) continue;
+      const l = t.leftTopWidthHeight;
+      const sliceAt = state.crosshair[ax.normal];
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(Math.min(l[0], l[0] + l[2]), l[1], Math.abs(l[2]), l[3]);
+      ctx.clip();
+      for (const a of arrows) {
+        if (a.planes && !a.planes.includes(ax.plane)) continue;
+        const mid = (a.from[ax.normal] + a.to[ax.normal]) / 2;
+        if (Math.abs(mid - sliceAt) > (a.depth ?? 12)) continue;
+        const [x1, y1] = toTile(t, a.from), [x2, y2] = toTile(t, a.to);
+        const len = Math.hypot(x2 - x1, y2 - y1);
+        if (len < 4 * dpr) continue;
+        const ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+        const head = Math.min(18 * dpr, len * 0.5), hw = head * 0.6;
+        const bx = x2 - ux * head, by = y2 - uy * head;
+        const path = new Path2D();
+        path.moveTo(x1, y1); path.lineTo(bx, by);
+        const headPath = new Path2D();
+        headPath.moveTo(x2, y2); headPath.lineTo(bx - uy * hw, by + ux * hw); headPath.lineTo(bx + uy * hw, by - ux * hw); headPath.closePath();
+        const col = a.color ?? '#ffffff';
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.strokeStyle = 'rgba(0,0,0,0.75)'; ctx.lineWidth = 7 * dpr; ctx.stroke(path); ctx.stroke(headPath);
+        ctx.strokeStyle = col; ctx.lineWidth = 3.5 * dpr; ctx.stroke(path);
+        ctx.fillStyle = col; ctx.fill(headPath);
+        if (a.label) {
+          ctx.font = `600 ${Math.round(13 * dpr)}px system-ui, sans-serif`;
+          ctx.textBaseline = 'middle';
+          const tx = x1 - ux * 8 * dpr, ty = y1 - uy * 8 * dpr;
+          ctx.textAlign = ux > 0.3 ? 'right' : ux < -0.3 ? 'left' : 'center';
+          ctx.lineWidth = 4 * dpr; ctx.strokeStyle = 'rgba(0,0,0,0.85)'; ctx.strokeText(a.label, tx, ty);
+          ctx.fillStyle = col; ctx.fillText(a.label, tx, ty);
+        }
+      }
+      ctx.restore();
+    }
+  }
+  const nvDraw = nv.drawScene.bind(nv);
+  (nv as unknown as { drawScene: () => unknown }).drawScene = () => { const r = nvDraw(); drawArrows(); return r; };
 
   // ---- volume / label bookkeeping -------------------------------------------------------
   /** `slab: true` = the dim off-slice copy of the vessels layer (see applySlab). */
@@ -244,6 +318,7 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
       nv.drawScene();
     }
     if (changed.has('windowId')) applyWindow();
+    if (changed.has('arrows')) nv.drawScene();
     if (changed.has('overlayOpacity')) { applyOpacity(); nv.drawScene(); }
     if (changed.has('visible') || changed.has('selectedId') || changed.has('hoverId')) refreshLuts();
     if (changed.has('crosshair') && currentSource() !== sourceId) applyCrosshair();
@@ -331,6 +406,7 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
       canvas.removeEventListener('mousemove', onMove);
       canvas.removeEventListener('mouseleave', onLeave);
       canvas.removeEventListener('click', onClick);
+      overlay.remove();
     },
   };
 }

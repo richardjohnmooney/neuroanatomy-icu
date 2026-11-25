@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { AppData } from '../data';
 import { displayName } from '../data';
-import type { Structure, Vec3 } from '../types';
+import type { Arrow, CameraView, Structure, Vec3 } from '../types';
 import { setState, state, subscribe } from '../state';
 import type { AppState } from '../state';
 
@@ -84,6 +84,81 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
   sliceLine.renderOrder = 11;
   sliceGroup.add(sliceMesh, sliceLine);
 
+  // ---- annotation arrows (MNI space, drawn over everything)
+  const arrowGroup = new THREE.Group();
+  world.add(arrowGroup);
+  function buildArrows(arrows: Arrow[]): void {
+    for (const c of [...arrowGroup.children]) {
+      arrowGroup.remove(c);
+      c.traverse((n) => {
+        const m = n as THREE.Mesh;
+        if (m.isMesh) { m.geometry.dispose(); (m.material as THREE.Material).dispose(); }
+      });
+    }
+    for (const a of arrows) {
+      if (a.no3d) continue;
+      const from = new THREE.Vector3(...a.from), to = new THREE.Vector3(...a.to);
+      const dir = to.clone().sub(from);
+      const len = dir.length();
+      if (len < 1e-3) continue;
+      dir.normalize();
+      const head = Math.min(9, len * 0.45), r = 1.6;
+      const mat = () => new THREE.MeshBasicMaterial({ color: new THREE.Color(a.color ?? '#ffffff'), depthTest: false, transparent: true, opacity: 0.95 });
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len - head, 12), mat());
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(r * 2.6, head, 16), mat());
+      shaft.position.y = (len - head) / 2;
+      cone.position.y = len - head / 2;
+      const g = new THREE.Group();
+      g.add(shaft, cone);
+      g.position.copy(from);
+      g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      for (const m of [shaft, cone]) m.renderOrder = 30;
+      arrowGroup.add(g);
+    }
+    requestRender();
+  }
+
+  // ---- camera requests (tutorials): glide to a view; user orbiting never writes back
+  let camAnim: { t0: number; dur: number; fromPos: THREE.Vector3; fromTgt: THREE.Vector3; toDir: THREE.Vector3; toDist: number; toTgt: THREE.Vector3; fromDir: THREE.Vector3; fromDist: number } | null = null;
+  const fitDistance = () => {
+    const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
+    const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect);
+    return 95 / Math.sin(Math.min(vHalf, hHalf));
+  };
+  function requestCamera(v: CameraView): void {
+    const toTgt = new THREE.Vector3(...(v.target ?? [BRAIN_CENTRE_MNI.x, BRAIN_CENTRE_MNI.y, BRAIN_CENTRE_MNI.z])).applyMatrix4(world.matrixWorld);
+    // direction is a vector in MNI space: rotate it (no translation) into three space
+    const toDir = new THREE.Vector3(...v.dir).applyQuaternion(world.quaternion).normalize();
+    // OrbitControls can't look exactly along its up axis: tilt a pure top/bottom view slightly (anterior up)
+    if (Math.abs(toDir.y) > 0.995) toDir.set(0, Math.sign(toDir.y), 0.08).normalize();
+    const fromDir = camera.position.clone().sub(controls.target);
+    const fromDist = fromDir.length();
+    fromDir.normalize();
+    camAnim = {
+      t0: performance.now(), dur: 900, fromPos: camera.position.clone(), fromTgt: controls.target.clone(),
+      toDir, toDist: fitDistance() / Math.max(0.2, v.zoom ?? 1), toTgt, fromDir, fromDist,
+    };
+  }
+  function stepCamera(now: number): void {
+    if (!camAnim) return;
+    const a = camAnim;
+    const t = Math.min(1, (now - a.t0) / a.dur);
+    const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // ease in-out cubic
+    const tgt = a.fromTgt.clone().lerp(a.toTgt, e);
+    // slerp the viewing direction so the camera swings round the brain rather than through it
+    const q = new THREE.Quaternion().setFromUnitVectors(a.fromDir, a.toDir);
+    const dir = a.fromDir.clone().applyQuaternion(new THREE.Quaternion().slerp(q, e));
+    const dist = a.fromDist + (a.toDist - a.fromDist) * e;
+    camera.position.copy(tgt).addScaledVector(dir, dist);
+    controls.target.copy(tgt);
+    controls.update();
+    requestRender();
+    if (t >= 1) camAnim = null;
+  }
+  const stopCamAnim = () => { camAnim = null; };
+  renderer.domElement.addEventListener('pointerdown', stopCamAnim);
+  renderer.domElement.addEventListener('wheel', stopCamAnim, { passive: true });
+
   // ---- load meshes
   const entries: Entry[] = [];
   const materials = new Map<string, THREE.MeshStandardMaterial>();
@@ -139,6 +214,7 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
     else { clipPlane.normal.set(-1, 0, 0); clipPlane.constant = cx; }                             // keep x <= cx
 
     // slice marker, centred on the brain in its in-plane axes
+    sliceGroup.visible = s.slicePlane3d;
     sliceGroup.rotation.set(0, 0, 0);
     if (s.plane === 'axial') { sliceGroup.position.set(0, -18, cz); sliceGroup.scale.set(190, 230, 1); }
     else if (s.plane === 'coronal') { sliceGroup.position.set(0, cy, 15); sliceGroup.rotation.x = Math.PI / 2; sliceGroup.scale.set(190, 150, 1); }
@@ -254,6 +330,7 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
   el.addEventListener('pointerup', onUp);
 
   // ---- resize
+  let lastFit = 0; // fit distance at the previous resize: zoom relative to it is kept across resizes
   const resize = () => {
     const w = Math.max(1, container.clientWidth), h = Math.max(1, container.clientHeight);
     renderer.setSize(w, h);
@@ -263,7 +340,11 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
     // keeping the current viewing direction.
     const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
     const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect);
-    const fitDist = 95 / Math.sin(Math.min(vHalf, hHalf));
+    const fit = 95 / Math.sin(Math.min(vHalf, hHalf));
+    // first fit: whole brain; later resizes keep the current zoom relative to the fit (tutorial close-ups)
+    const zoomRatio = lastFit > 0 ? camera.position.distanceTo(controls.target) / lastFit : 1;
+    const fitDist = fit * zoomRatio;
+    lastFit = fit;
     const dir = camera.position.clone().sub(controls.target).normalize();
     camera.position.copy(controls.target).addScaledVector(dir, fitDist);
     controls.update();
@@ -274,16 +355,19 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
   resize();
 
   // ---- store
-  const relevant: (keyof AppState)[] = ['crosshair', 'plane', 'clip3d', 'explode', 'visible', 'opacity3d', 'selectedId', 'hoverId'];
+  const relevant: (keyof AppState)[] = ['crosshair', 'plane', 'clip3d', 'explode', 'visible', 'opacity3d', 'selectedId', 'hoverId', 'slicePlane3d'];
   const unsub = subscribe((s, changed) => {
+    if (changed.has('arrows')) buildArrows(s.arrows);
+    if (changed.has('camera3d') && s.camera3d) requestCamera(s.camera3d);
     if (!relevant.some((k) => changed.has(k))) return;
     apply(s);
   });
 
   // ---- render loop (on demand)
   let raf = 0;
-  const loop = () => {
+  const loop = (now: number) => {
     raf = requestAnimationFrame(loop);
+    stepCamera(now);
     controls.update(); // fires 'change' while damping
     if (dirty) { dirty = false; renderer.render(scene, camera); }
   };
@@ -292,6 +376,8 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
   await Promise.all(jobs);
   readout.textContent = '';
   apply(state);
+  buildArrows(state.arrows);
+  if (state.camera3d) requestCamera(state.camera3d);
 
   return {
     dispose() {
@@ -304,6 +390,9 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
       el.removeEventListener('pointerleave', onPointerLeave);
       el.removeEventListener('pointerdown', onDown);
       el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointerdown', stopCamAnim);
+      el.removeEventListener('wheel', stopCamAnim);
+      buildArrows([]);
       for (const m of materials.values()) m.dispose();
       for (const e of entries) for (const m of e.meshes) m.geometry.dispose();
       renderer.dispose();

@@ -2,6 +2,7 @@
 import { state, setState, subscribe } from '../state';
 import type { BaseVolume, Plane, Topic, Vec3 } from '../types';
 import { type AppData, groupDefaults, topicGroups, topicStructures } from '../data';
+import { startTutorial, tutorialById } from './tutorial';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -52,7 +53,7 @@ export function applyTopic(data: AppData, topicId: string): void {
 
 function initTabs(data: AppData): void {
   const nav = $('topic-tabs');
-  const planned = ['Herniation', 'Raised ICP'];
+  const planned = ['Raised ICP'];
   for (const t of data.manifest.topics) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -385,7 +386,17 @@ function renderInfo(data: AppData): void {
     const hint = document.createElement('p');
     hint.className = 'meta';
     hint.textContent = 'Click a structure in any panel or the list to read about it. Scroll or use ↑/↓ to move through slices.';
-    host.append(h, p, hint);
+    host.append(h);
+    const tut = topic.tutorial ? tutorialById(topic.tutorial) : undefined;
+    if (tut) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tut-start';
+      b.textContent = `▶ ${tut.name}`;
+      b.title = tut.description;
+      b.onclick = () => startTutorial(tut.id);
+      host.append(b);
+    }
+    host.append(p, hint);
   }
   if (!data.manifest.reviewed) {
     const f = document.createElement('div');
