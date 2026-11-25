@@ -1,6 +1,6 @@
 # CLAUDE.md — NeuroAnatomy for ICU
 
-Interactive web app teaching basic neuroanatomy to ICU registrars: a real CT template sliced in three planes with colour annotations, a stylised colour slice, and a 3D stylised brain — all **linked** (one crosshair drives everything). Hosted as a static site (GitHub Pages planned). Plan of record: `C:\Users\richa\.claude\plans\i-d-like-a-3d-velvety-parrot-of-64ff5287-49a5-4e49-80ad-f3bc9982f8e5.md`.
+Interactive web app teaching basic neuroanatomy to ICU registrars: a real CT template sliced in three planes with colour annotations, a stylised colour slice, and a 3D stylised brain — all **linked** (one crosshair drives everything). Live at https://richardjohnmooney.github.io/neuroanatomy-icu/ (GitHub Pages, deployed on every push to `main`). Plan of record: `C:\Users\richa\.claude\plans\i-d-like-a-3d-velvety-parrot-of-64ff5287-49a5-4e49-80ad-f3bc9982f8e5.md`.
 
 **Keep this file updated** at the end of every working session (status, decisions, known issues).
 
@@ -57,30 +57,28 @@ Opus (main session) owns architecture, contracts (`types.ts`, `state.ts`, manife
 | Lobes (48 HO cortical regions → 6 lobes, WM → nearest lobe), insula, deep grey, lateral ventricles | Harvard–Oxford cortical + subcortical (FSL, via nilearn) | FSL licence, non-commercial |
 | Cerebellum, midbrain/pons/medulla | Talairach Daemon atlas in MNI space (via nilearn) | free for research/education, attribute |
 | Corpus callosum, internal capsule | derived in pipeline | own work |
-| Planned: vessels, falx/tentorium, fissure landmarks | hand-authored / derived in pipeline | own work |
-(Update with exact URLs once the pipeline report is in — see `pipeline/README.md`.)
+| Vessels, falx/tentorium, fissures/sulci, CSF spaces | hand-authored / derived in pipeline | own work |
+Exact URLs and procedures: `pipeline/README.md`. Public repo + non-commercial licences (CQ500, FSL) ⇒ project is for non-commercial educational use.
 
 ## Status / roadmap
-- [x] **Phase 1** (2026-11-25) — scaffold, pipeline (CT + 16 anatomy labels + 28 meshes), three linked panels (CT+overlay, stylised slice, 3D with slice plane/clip/explode/picking), topic tabs, info cards, About/sources. Typecheck + build pass, no console errors. Not yet committed.
+- [x] **Phase 1** (2026-11-25) — scaffold, pipeline (CT + 16 anatomy labels + 28 meshes), three linked panels (CT+overlay, stylised slice, 3D with slice plane/clip/explode/picking), topic tabs, info cards, About/sources. Typecheck + build pass, no console errors.
 - [x] **Better lobes** (2026-11-25) — lobes rebuilt from 48 Harvard–Oxford cortical regions (`LOBE_MAP` in build_labels.py), white matter → nearest lobe per hemisphere, mode-filtered. Added corpus callosum (50) and internal capsule (51), derived geometrically before the WM fill. Check images: `pipeline/check_labels.py` → `pipeline/cache/check_*.png`.
 - [x] **Phase 2** (2026-11-25) — CSF: 3rd/4th ventricles, aqueduct, suprasellar/interpeduncular/ambient/quadrigeminal/prepontine cisterns, cisterna magna (anatomy layer 31–33, 40–45; `add_csf_labels` in build_labels.py, CT HU thresholds inside ROIs + geometric fallbacks). New layers `sulci` (interhemispheric, Sylvian, central, parieto-occipital, calcarine) and `dura` (falx, tentorium with notch) from `build_overlays.py`. Topics: CSF system, Fissures & sulci, Falx & tentorium (topics can set `plane` and `defaultHidden` groups). Check images: `pipeline/cache/check_*.png`, `check_overlay_*.png`.
-- [x] **Phase 3** (2026-11-25) — vessels layer: ICA, MCA, ACA, ACom, PCom, PCA, basilar, vertebral from hand-authored centrelines (`pipeline/vessels_mni.yaml`, Opus-owned); SSS, ISS, straight, transverse sinuses derived from the dura labels, sigmoid/deep veins/confluence/cavernous from YAML. `build_vessels.py` rasterises tubes (min 1.5 mm radius) and writes smooth tube GLBs itself (`SELF_MESHED` in build_meshes). Territories layer (ACA/MCA/lenticulostriate/PCA/vertebrobasilar) from `build_territories.py` — **currently an approximate fallback** built from Harvard–Oxford + anatomy labels. Vessels topic.
-- [ ] **Swap in the real territory atlas**: Liu et al. 2023 Arterial Territory Atlas (Sci Data 10:74, CC BY 4.0), NITRC download `https://www.nitrc.org/frs/download.php/12382/Atlas_MNI152.zip` needs a (free) NITRC login — user downloads it into `pipeline/cache/`, then implement `build_from_atlas` in build_territories.py.
+- [x] **Phase 3** (2026-11-25) — vessels layer: ICA, MCA, ACA, ACom, PCom, PCA, basilar, vertebral from hand-authored centrelines (`pipeline/vessels_mni.yaml`, Opus-owned); SSS, ISS, straight, transverse sinuses derived from the dura labels, sigmoid/deep veins/confluence/cavernous from YAML. `build_vessels.py` rasterises tubes (min 1.5 mm radius) and writes smooth tube GLBs itself (`SELF_MESHED` in build_meshes). Territories layer (ACA/MCA/lenticulostriate/PCA/vertebrobasilar) from `build_territories.py` (Liu 2023 atlas; approximate HO-based fallback if the atlas files are missing). Vessels topic.
 - [x] **Real CT** (2026-11-25) — `public/data/ct.nii.gz` is CQ500-CT-148 series 3 (thin plain, 0.625 mm, read normal by all 3 readers; CC BY-NC-SA 4.0), defaced, warped to MNI (antspyx Rigid→Affine→SyN to Rorden template; `build_ct.py`, registration cached in `pipeline/cache/ct_subject/work/`). `--template` restores the old template CT. Labels conformed to it (`real_ct.py`: brain mask from skull >300 HU; lobes clipped/nearest-filled; cerebellum + brainstem rebuilt from CT; CSF thresholds at 20 HU; tentorium height field fitted to the visible tentorium; falx on the real midline). Territories now from the real Liu 2023 atlas (`pipeline/cache/Atlas_182_MNI152/`, x-axis flipped on load). Check images `pipeline/cache/check_fit_*.png`.
-- [ ] Phase 4 — deploy to GitHub Pages (needs user OK to create repo/push).
+- [x] **Phase 4** (2026-11-25) — project moved to `C:\dev\ct-brain-anatomy`; public repo `richardjohnmooney/neuroanatomy-icu`; GitHub Pages live. Note: a push made before Pages is enabled gets cancelled — re-run with `gh workflow run deploy.yml`.
 - [ ] Phase 5 — ICU extras: herniation syndromes, raised-ICP CT checklist, "where is the blood?", ASPECTS, EVD/ICP bolt, windowing, quiz.
 - [ ] Phase 6 — MRI (MNI152 T1/T2), modality toggle and CT↔MRI compare.
 
 Implementation notes: slice viewer hover tests label layers top-down (last layer in volumes.json first). A missing layer file makes NiiVue fail to load the whole viewer (Vite serves index.html for missing files) — always build all layers listed in volumes.json. NiiVue 0.69 label LUT must use `max` = real max labelValue (not 255) or background takes a label colour; hidden structures = alpha 0 in the LUT. three.js imports use `three/examples/jsm/...` (not `three/addons/...`) so tsconfig `paths` resolve. 3D camera refits to the panel aspect on resize. JS bundle ~1.5 MB (NiiVue) — code-split later if load time matters.
 
-Backlog ideas: lazy-load meshes per topic (public/data is now ~23 MB, all meshes load at start), CT↔stylised wipe/curtain slider, sharper CT source, outline-only overlay mode, midline-shift measuring tool.
+Backlog ideas: lazy-load meshes per topic (public/data is ~24 MB, all meshes load at start — matters on the hosted site), CT↔stylised wipe/curtain slider, outline-only overlay mode, midline-shift measuring tool.
 
 ## Known simplifications
-- Atlas labels on a template are approximate; lobe boundaries follow Harvard–Oxford maxprob (25%) regions.
+- Atlas labels fitted to one real CT are approximate; lobe boundaries follow Harvard–Oxford maxprob (25%) regions.
 - Brainstem divisions come from the Talairach atlas, not true landmark segmentation (pons centroid z≈−27); Talairach now only used for cerebellum/brainstem.
 - Lobe volumes: frontal 39%, temporal 19%, occipital 18% (a bit large), parietal 17% (a bit small), cingulate 5%, insula 1% — HO extents. Frontal/temporal white-matter boundary is a flat horizontal edge. L/R split by HO hemisphere labels.
-- Corpus callosum/internal capsule are geometric approximations: splenium thick, posterior limb of IC thin. Third ventricle region unlabelled (comes with CSF phase).
-- CSF spaces: template CT barely resolves cisterns, so 3rd ventricle, suprasellar and ambient are largely geometric (median HU 15–23); ambient/suprasellar oversized (~3.5 mL each); cisterna magna sits low (z≈−60) linked to the 4th ventricle by a straight 'Magendie' tube; no cerebellar tonsil label.
+- Corpus callosum/internal capsule are geometric approximations: splenium thick, posterior limb of IC thin. 
 - Sulci/dura are derived from atlas boundaries, not CT. Central sulcus has a gap at |x|≈18–40 on high axial slices and meets the midline at y≈−20 (real ≈−35). Sylvian fissure has no posterior limb beyond y −30. Tentorium's anterior part is a height field, not a true petrous attachment.
 - Arteries are idealised centrelines: they can't be checked against non-contrast CT; MCA/ACA run through fissures that have no CSF label so look 'in parenchyma'. ACom is tiny. Cavernous sinus is a rounded box. Transverse sinuses are symmetric (no dominance).
 - Territories (Liu atlas) label names for level-1 values 25–30 were inferred from position (no local label table); anterior choroidal grouped with PCA as the atlas does.
