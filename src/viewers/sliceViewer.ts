@@ -12,6 +12,8 @@ export interface SliceViewerOptions {
 }
 
 const CROSSHAIR: number[] = [0.31, 0.7, 1, 1]; // #4fb3ff
+/** Label layer that gets the thin-slab projection (see applySlab). */
+const SLAB_LAYER = 'vessels';
 const PLANE_TYPE: Record<Plane, SLICE_TYPE> = {
   axial: SLICE_TYPE.AXIAL, coronal: SLICE_TYPE.CORONAL, sagittal: SLICE_TYPE.SAGITTAL,
 };
@@ -51,13 +53,14 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
   }
 
   // ---- volume / label bookkeeping -------------------------------------------------------
-  let labelVols: { layerId: string; vol: NVImage }[] = [];
+  /** `slab: true` = the dim off-slice copy of the vessels layer (see applySlab). */
+  let labelVols: { layerId: string; vol: NVImage; slab?: boolean }[] = [];
   let baseVol: NVImage | null = null;
   let loadGen = 0;
   let applying = false; // true while we push store state into NiiVue (suppresses re-emit)
 
   /** Build a 256-entry RGBA label LUT for a layer reflecting visibility / selection / hover. */
-  function buildLut(layerId: string) {
+  function buildLut(layerId: string, slab = false) {
     const structs = data.byLabel.get(layerId);
     const maxVal = Math.max(1, ...[...(structs?.keys() ?? [])]);
     const lut = new Uint8ClampedArray((maxVal + 1) * 4);
@@ -75,6 +78,14 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
           r += (255 - r) * 0.3; g += (255 - g) * 0.3; b += (255 - b) * 0.3;
           a = 255;
         }
+        if (slab) {
+          // Off-slice course of the vessel: same hue, clearly dimmer.
+          if (stylised) { r *= 0.4; g *= 0.4; b *= 0.4; } else a *= 0.35;
+        } else if (layerId === SLAB_LAYER) {
+          // On-slice vessel: brightened toward white so it stands out from its course.
+          r += (255 - r) * 0.35; g += (255 - g) * 0.35; b += (255 - b) * 0.35;
+          a = 255;
+        }
         const i = val * 4;
         lut[i] = r; lut[i + 1] = g; lut[i + 2] = b; lut[i + 3] = a;
       }
@@ -83,7 +94,7 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
   }
 
   function refreshLuts(): void {
-    for (const lv of labelVols) lv.vol.colormapLabel = buildLut(lv.layerId);
+    for (const lv of labelVols) lv.vol.colormapLabel = buildLut(lv.layerId, lv.slab);
     nv.refreshColormaps();
     nv.updateGLVolume();
   }
@@ -109,27 +120,31 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
   async function loadVolumes(): Promise<void> {
     const gen = ++loadGen;
     const list: Record<string, unknown>[] = [];
-    if (stylised) {
-      // Label layers only. First layer doubles as NiiVue's mandatory base volume.
-      layers.forEach((l) => list.push({ url: data.url(l.file), name: l.file, colormap: 'gray', opacity: 1, colormapLabel: buildLut(l.id) }));
-    } else {
+    const descs: { layerId: string; slab: boolean }[] = []; // one per label volume, in load order
+    const opacity = stylised ? 1 : state.overlayOpacity;
+    if (!stylised) {
       const bv = data.volumes.baseVolumes.find((v) => v.id === state.baseVolumeId) ?? data.volumes.baseVolumes[0];
       list.push({ url: data.url(bv.file), name: bv.file, colormap: 'gray', opacity: 1 });
-      layers.forEach((l) => list.push({ url: data.url(l.file), name: l.file, colormap: 'gray', opacity: state.overlayOpacity, colormapLabel: buildLut(l.id) }));
     }
+    // Label layers (in stylised mode the first one doubles as NiiVue's mandatory base volume).
+    // The vessels layer is loaded twice: a dim "slab" copy underneath, the on-slice layer on top.
+    layers.forEach((l) => {
+      if (l.id === SLAB_LAYER) {
+        list.push({ url: data.url(l.file), name: 'slab-' + l.file, colormap: 'gray', opacity, colormapLabel: buildLut(l.id, true) });
+        descs.push({ layerId: l.id, slab: true });
+      }
+      list.push({ url: data.url(l.file), name: l.file, colormap: 'gray', opacity, colormapLabel: buildLut(l.id) });
+      descs.push({ layerId: l.id, slab: false });
+    });
     // Remove existing volumes (when reloading after a base volume change).
     for (const v of [...nv.volumes]) nv.removeVolume(v);
     await nv.loadVolumes(list as never);
     if (gen !== loadGen) return;
     const vols = nv.volumes;
+    const offset = stylised ? 0 : 1;
+    baseVol = stylised ? null : vols[0] ?? null;
     labelVols = [];
-    if (stylised) {
-      layers.forEach((l, i) => vols[i] && labelVols.push({ layerId: l.id, vol: vols[i] }));
-      baseVol = null;
-    } else {
-      baseVol = vols[0] ?? null;
-      layers.forEach((l, i) => vols[i + 1] && labelVols.push({ layerId: l.id, vol: vols[i + 1] }));
-    }
+    descs.forEach((d, i) => { const v = vols[i + offset]; if (v) labelVols.push({ ...d, vol: v }); });
     slabOrig = null; slabKey = '';
     applySlab();
     nv.refreshColormaps();
@@ -141,10 +156,11 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
   }
 
   // ---- vessel slab ----------------------------------------------------------------------
-  // Vessels are thin tubes, so a single slice shows them as dots. Fill each empty voxel of the
-  // vessels layer with the nearest vessel label within ±N voxels along the viewing axis, so
-  // vessels read as short segments ("thin-slab MIP"). The original image is kept to recompute.
-  const SLAB_LAYER = 'vessels';
+  // Vessels are thin tubes, so a single slice shows them as dots. A second copy of the vessels
+  // layer, drawn dimmer underneath, holds the nearest vessel label within ±N voxels along the
+  // viewing axis ("thin-slab MIP"), so each vessel's course shows as a faint segment while the
+  // part actually cut by this slice stays bright on top. Label values are never changed
+  // (NiiVue label LUTs misbehave if a volume's value range changes after load).
   let slabOrig: Uint8Array | null = null;
   let slabKey = '';
 
@@ -159,7 +175,7 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
   }
 
   function applySlab(): void {
-    const lv = labelVols.find((x) => x.layerId === SLAB_LAYER);
+    const lv = labelVols.find((x) => x.layerId === SLAB_LAYER && x.slab);
     if (!lv) return;
     const vol = lv.vol;
     const img = vol.img as unknown as Uint8Array | undefined;
@@ -171,17 +187,17 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
     const key = `${n}:${axis}`;
     if (key === slabKey) return;
     slabKey = key;
-    const out = Uint8Array.from(slabOrig);
+    const src = slabOrig;
+    const out = new Uint8Array(src.length); // only off-slice voxels; on-slice ones come from the top layer
     if (n > 0) {
       const nx = dims[1], ny = dims[2], nz = dims[3];
       const size = [nx, ny, nz];
       const stride = [1, nx, nx * ny][axis];
       const len = size[axis];
-      const src = slabOrig;
       // Outward from the slice: nearer vessels win over farther ones.
       for (let d = 1; d <= n; d++) {
         for (let idx = 0; idx < out.length; idx++) {
-          if (out[idx]) continue;
+          if (out[idx] || src[idx]) continue;
           const a = Math.floor(idx / stride) % len;
           const fwd = a + d < len ? src[idx + d * stride] : 0;
           if (fwd) { out[idx] = fwd; continue; }
