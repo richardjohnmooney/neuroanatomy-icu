@@ -135,7 +135,7 @@
         -12
       ],
       "plane": "axial",
-      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. This tab opens on a simulated CT angiogram (switch to the venogram or the plain CT with 'Scan'); use 'Vessel slab' to follow vessels across slices. Switch on 'Arterial territories' to see which territory a hypodensity belongs to.",
+      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. This tab opens on a simulated CT angiogram (switch to the venogram or the plain CT with 'Scan'); use 'Vessel slab' to follow vessels across slices. Switch on 'Arterial territories' to see which territory a hypodensity belongs to. Colours are matched: each arterial territory is a lighter tint of the artery that supplies it (ACA green, MCA amber, lenticulostriate orange, PCA violet, vertebrobasilar pink); the ICA is red and the veins are blues.",
       "context": [
         "lobes",
         "posterior-fossa"
@@ -659,7 +659,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 2,
-      "color": "#ff6b6b",
+      "color": "#f4a700",
       "meshes": [
         "middle-cerebral-artery_L.glb",
         "middle-cerebral-artery_R.glb"
@@ -674,7 +674,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 3,
-      "color": "#ff8fab",
+      "color": "#2a9d4b",
       "meshes": [
         "anterior-cerebral-artery_L.glb",
         "anterior-cerebral-artery_R.glb"
@@ -689,7 +689,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 4,
-      "color": "#ffc2d1",
+      "color": "#74c69d",
       "meshes": [
         "anterior-communicating-artery.glb"
       ],
@@ -703,7 +703,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 5,
-      "color": "#f4a261",
+      "color": "#b48ee6",
       "meshes": [
         "posterior-communicating-artery_L.glb",
         "posterior-communicating-artery_R.glb"
@@ -718,7 +718,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 6,
-      "color": "#e76f51",
+      "color": "#8e44ec",
       "meshes": [
         "posterior-cerebral-artery_L.glb",
         "posterior-cerebral-artery_R.glb"
@@ -733,7 +733,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 7,
-      "color": "#c1121f",
+      "color": "#e0218a",
       "meshes": [
         "basilar-artery.glb"
       ],
@@ -747,7 +747,7 @@
       "group": "arteries",
       "layer": "vessels",
       "labelValue": 8,
-      "color": "#9d0208",
+      "color": "#f06aa8",
       "meshes": [
         "vertebral-artery_L.glb",
         "vertebral-artery_R.glb"
@@ -762,7 +762,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 20,
-      "color": "#3a86ff",
+      "color": "#1d4ed8",
       "meshes": [
         "superior-sagittal-sinus.glb"
       ],
@@ -776,7 +776,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 21,
-      "color": "#5e60ce",
+      "color": "#3b82f6",
       "meshes": [
         "inferior-sagittal-sinus.glb"
       ],
@@ -789,7 +789,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 26,
-      "color": "#7209b7",
+      "color": "#7dd3fc",
       "meshes": [
         "deep-cerebral-veins.glb"
       ],
@@ -803,7 +803,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 22,
-      "color": "#4361ee",
+      "color": "#2563eb",
       "meshes": [
         "straight-sinus.glb"
       ],
@@ -816,7 +816,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 23,
-      "color": "#4895ef",
+      "color": "#60a5fa",
       "meshes": [
         "confluence-of-sinuses.glb"
       ],
@@ -830,7 +830,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 24,
-      "color": "#4cc9f0",
+      "color": "#0ea5e9",
       "meshes": [
         "transverse-sinus_L.glb",
         "transverse-sinus_R.glb"
@@ -845,7 +845,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 25,
-      "color": "#56cfe1",
+      "color": "#22d3ee",
       "meshes": [
         "sigmoid-sinus_L.glb",
         "sigmoid-sinus_R.glb"
@@ -860,7 +860,7 @@
       "group": "veins",
       "layer": "vessels",
       "labelValue": 27,
-      "color": "#6a4c93",
+      "color": "#0891b2",
       "meshes": [
         "cavernous-sinus_L.glb",
         "cavernous-sinus_R.glb"
@@ -875,7 +875,7 @@
       "group": "territories",
       "layer": "territories",
       "labelValue": 1,
-      "color": "#90be6d",
+      "color": "#9ee6b3",
       "meshes": [
         "aca-territory_L.glb",
         "aca-territory_R.glb"
@@ -890,7 +890,7 @@
       "group": "territories",
       "layer": "territories",
       "labelValue": 2,
-      "color": "#f9c74f",
+      "color": "#ffe08a",
       "meshes": [
         "mca-territory_L.glb",
         "mca-territory_R.glb"
@@ -905,7 +905,7 @@
       "group": "territories",
       "layer": "territories",
       "labelValue": 3,
-      "color": "#f94144",
+      "color": "#ffb470",
       "meshes": [
         "lenticulostriate-territory_L.glb",
         "lenticulostriate-territory_R.glb"
@@ -920,7 +920,7 @@
       "group": "territories",
       "layer": "territories",
       "labelValue": 4,
-      "color": "#f8961e",
+      "color": "#cbb0f5",
       "meshes": [
         "pca-territory_L.glb",
         "pca-territory_R.glb"
@@ -935,7 +935,7 @@
       "group": "territories",
       "layer": "territories",
       "labelValue": 5,
-      "color": "#577590",
+      "color": "#f7a8d0",
       "meshes": [
         "vertebrobasilar-territory_L.glb",
         "vertebrobasilar-territory_R.glb"
