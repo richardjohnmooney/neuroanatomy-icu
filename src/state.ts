@@ -16,6 +16,7 @@ export interface AppState {
   explode: number;              // 0..1 explode lobes in 3D
   radiological: boolean;        // true: patient left on screen right (CT convention)
   vesselSlab: number;           // mm either side of the slice from which vessels are projected (0 = exact slice)
+  showCrosshair: boolean;       // draw crosshair lines on the slice views (position stays linked either way)
 }
 
 type Listener = (s: AppState, changed: Set<keyof AppState>) => void;
@@ -37,6 +38,7 @@ export const state: AppState = {
   explode: 0,
   radiological: true,
   vesselSlab: 3,
+  showCrosshair: false,
 };
 
 /** Merge a patch and notify. Pass `source` to let the originating panel skip its own echo. */

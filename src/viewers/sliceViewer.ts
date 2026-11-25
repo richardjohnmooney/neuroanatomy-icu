@@ -30,8 +30,8 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
 
   const nv = new Niivue({
     backColor: [0, 0, 0, 1],
-    crosshairColor: CROSSHAIR,
-    crosshairWidth: 1,
+    crosshairColor: state.showCrosshair ? CROSSHAIR : [0, 0, 0, 0],
+    crosshairWidth: state.showCrosshair ? 1 : 0,
     isColorbar: false,
     isOrientCube: false,
     isRuler: false,
@@ -234,6 +234,12 @@ export async function createSliceViewer(o: SliceViewerOptions): Promise<{ dispos
     if (changed.has('baseVolumeId') && !stylised) { void loadVolumes(); return; }
     if (changed.has('radiological') || changed.has('layout') || changed.has('plane')) applyView();
     if (changed.has('vesselSlab') || changed.has('plane')) applySlab();
+    if (changed.has('showCrosshair')) {
+      // Lines are optional; the crosshair position still links the panels when hidden.
+      nv.setCrosshairColor(state.showCrosshair ? CROSSHAIR : [0, 0, 0, 0]);
+      nv.setCrosshairWidth(state.showCrosshair ? 1 : 0);
+      nv.drawScene();
+    }
     if (changed.has('windowId')) applyWindow();
     if (changed.has('overlayOpacity')) { applyOpacity(); nv.drawScene(); }
     if (changed.has('visible') || changed.has('selectedId') || changed.has('hoverId')) refreshLuts();

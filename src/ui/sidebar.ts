@@ -150,6 +150,10 @@ function initControls(data: AppData): void {
   radio.checked = state.radiological;
   radio.onchange = () => setState({ radiological: radio.checked }, 'ui');
 
+  const cross = $<HTMLInputElement>('crosshair-check');
+  cross.checked = state.showCrosshair;
+  cross.onchange = () => setState({ showCrosshair: cross.checked }, 'ui');
+
   // Vessel slab: project vessels from ±N mm around the slice so they read as segments, not dots.
   const slab = $<HTMLInputElement>('slab-range');
   const slabVal = $('slab-value');
