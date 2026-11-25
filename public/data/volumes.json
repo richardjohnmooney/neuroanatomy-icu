@@ -10,7 +10,7 @@
   "baseVolumes": [
     {
       "id": "ct",
-      "label": "Non-contrast CT (template)",
+      "label": "Non-contrast CT (real normal scan)",
       "modality": "CT",
       "file": "ct.nii.gz",
       "windows": [
@@ -39,7 +39,7 @@
           "level": 500
         }
       ],
-      "attribution": "CT template: Rorden et al., Clinical Toolbox for SPM (BSD licence)"
+      "attribution": "Head CT: CQ500 dataset, case CQ500-CT-148 (qure.ai; Chilamkurthy et al., Lancet 2018;392:2388), CC BY-NC-SA 4.0. Resampled, registered to MNI152 and defaced; this derived image is shared under the same licence."
     }
   ],
   "labelLayers": [

@@ -13,6 +13,8 @@ import nibabel as nib
 from scipy import ndimage as ndi
 from nilearn import datasets
 from common import CACHE, DATA, GRID_SHAPE, grid_affine, save_nifti, structures
+import real_ct
+from build_labels import ct_is_real
 
 ND = str(CACHE / "nilearn")
 AFF = grid_affine()
@@ -60,8 +62,22 @@ def load_inputs():
     return lab, ct, cort, C
 
 
-def intracranial(lab, ct):
-    """Soft-tissue space inside the inner table (no CSF resolution in this CT, so used as a hull)."""
+def real_inputs(ct):
+    """Real-CT guides: brain mask, tentorium height field H(x, y), falx midline x(y, z). Saved by build_labels
+    (cache/*.npy); recomputed if absent."""
+    p = CACHE / "brain_mask.npy"
+    bm = np.load(p) if p.exists() else real_ct.brain_mask(ct)
+    q = CACHE / "tentorium_height.npy"
+    H = np.load(q) if q.exists() else real_ct.tentorium_height(ct, bm)
+    xm, _ = real_ct.midline_x(ct, bm)
+    return dict(bm=bm, H=H, xm=xm)
+
+
+def intracranial(lab, ct, real=None):
+    """Space inside the inner table: the real brain mask (+1 voxel so structures hugging the skull survive), or on
+    the blurry template CT a soft-tissue hull."""
+    if real is not None:
+        return ndi.binary_dilation(real["bm"], iterations=1)
     soft = (ct > -20) & (ct < 120)
     core = ndi.binary_erosion(soft, iterations=3)
     cl, _ = ndi.label(core)
@@ -74,7 +90,7 @@ def intracranial(lab, ct):
 
 
 # ----------------------------------------------------------------------------- sulci
-def build_sulci(lab, ct, cort, C, ic):
+def build_sulci(lab, ct, cort, C, ic, real=None):
     cer = np.isin(lab, [1, 2, 3, 4, 5, 6])
     out = np.zeros(lab.shape, np.uint8)
     R = lambda *names: np.isin(cort, [C[n] for n in names])
@@ -84,8 +100,9 @@ def build_sulci(lab, ct, cort, C, ic):
     left = cer & (X < 0); right = cer & (X >= 0)
     near_l = edt(left) <= 6; near_r = edt(right) <= 6
     notcer = ~np.isin(lab, [10, 11, 12, 13, 20, 21, 22, 23, 24, 30, 31, 32, 33, 50, 51])
-    ihf = (np.abs(X) <= 1) & near_l & near_r & notcer & ic
-    ihf |= (np.abs(X) <= 1) & (Z > 0) & ic & notcer & (Y > -105) & (Y < 75) & \
+    Xm = X - real["xm"][None] if real is not None else X          # real midline line (<= ~2 mm off x = 0)
+    ihf = (np.abs(Xm) <= 1) & near_l & near_r & notcer & ic
+    ihf |= (np.abs(Xm) <= 1) & (Z > 0) & ic & notcer & (Y > -105) & (Y < 75) & \
         ndi.binary_dilation(ihf, iterations=3) & (lab != 50)
     ihf = remove_small(ihf, 500)
     out[ihf] = 1
@@ -135,14 +152,9 @@ def build_sulci(lab, ct, cort, C, ic):
 
 
 # ----------------------------------------------------------------------------- dura
-def build_dura(lab, ct, ic):
-    out = np.zeros(lab.shape, np.uint8)
-    cer = np.isin(lab, [1, 2, 3, 4, 5, 6])
-    cb = lab == 10
-    brainstem = np.isin(lab, [11, 12, 13])
-
-    # ---- tentorium: Voronoi interface between cerebellum and cerebrum (height field z(x,y)),
-    # extended to the inner skull and forwards towards the petrous apex
+def _tentorium_template(lab, cb, cer, ic):
+    """Template-CT tentorium: Voronoi interface between cerebellum and cerebrum (height field z(x,y)), extended to the
+    inner skull and forwards towards the petrous apex."""
     dC = edt(cb); dU = edt(cer)
     tent = (np.abs(dC - dU) <= 2.0) & ic & (Y < -5) & (Y > -110) & (Z > -45) & (dC < 30)
     tent = remove_small(tent, 500)
@@ -163,6 +175,22 @@ def build_dura(lab, ct, ic):
     d_ms = edt((lab == 11) | ((lab == 12) & (Z > -25)))
     tent &= d_ms > 5
     tent = remove_small(tent, 500)
+    return tent
+
+
+def build_dura(lab, ct, ic, real=None):
+    out = np.zeros(lab.shape, np.uint8)
+    cer = np.isin(lab, [1, 2, 3, 4, 5, 6])
+    cb = lab == 10
+    brainstem = np.isin(lab, [11, 12, 13])
+
+    if real is not None:
+        # tentorium = the CT-fitted height field H(x, y) (real_ct.tentorium_height: bright sheet in the thin-slice CT),
+        # 3 voxels thick, inside the skull, with the free edge (incisura) kept clear of midbrain / upper pons
+        tent = (np.abs(Z - real["H"][:, :, None]) <= 1.25) & ic & (np.abs(X) <= 62) & (Y > -108) & (Y < -6)
+        d_ms = edt((lab == 11) | ((lab == 12) & (Z > -25)))
+        tent &= d_ms > 4
+        tent = remove_small(tent, 500)
 
     # ---- falx
     cc = lab == 50
@@ -195,7 +223,8 @@ def build_dura(lab, ct, ic):
             free[j] = ridge[j]
     # blend the callosal and straight-sinus parts around the splenium
     free = ndi.gaussian_filter1d(free, 2.0, mode="nearest")
-    falx = (np.abs(X) <= 1) & ic & (Z >= free[None, :, None]) & (Y > -108) & (Y < 78)
+    Xm = X - real["xm"][None] if real is not None else X     # follow the real midline line (<= ~2 mm off x = 0)
+    falx = (np.abs(Xm) <= 1) & ic & (Z >= free[None, :, None]) & (Y > -108) & (Y < 78)
     falx = remove_small(falx, 500)
     out[tent] = 2
     out[falx] = 1
@@ -249,9 +278,10 @@ def check_images(lab, ct, sul, dur):
 # ----------------------------------------------------------------------------- main
 def main():
     lab, ct, cort, C = load_inputs()
-    ic = intracranial(lab, ct)
-    sul = build_sulci(lab, ct, cort, C, ic)
-    dur, _ = build_dura(lab, ct, ic)
+    real = real_inputs(ct) if ct_is_real() else None
+    ic = intracranial(lab, ct, real)
+    sul = build_sulci(lab, ct, cort, C, ic, real)
+    dur, _ = build_dura(lab, ct, ic, real)
     for name, arr, layer in (("labels_sulci.nii.gz", sul, "sulci"), ("labels_dura.nii.gz", dur, "dura")):
         save_nifti(arr, DATA / name, np.uint8)
         print(name, {s["id"]: int((arr == s["labelValue"]).sum())

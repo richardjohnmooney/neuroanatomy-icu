@@ -1,14 +1,16 @@
 """Build labels_territories.nii.gz (uint8; 1 ACA, 2 MCA, 3 lenticulostriate, 4 PCA, 5 vertebrobasilar).
 
 Preferred source: Liu C-F et al. 2023 Arterial Territories Atlas (Sci Data 10:74, doi 10.1038/s41597-022-01923-0;
-NITRC project 'arterialatlas', licence 'Attribution' = CC BY; MNI152 version Atlas_MNI152.zip). NITRC serves a login
-page for that download, so (without bypassing the gate) this script uses the documented APPROXIMATE FALLBACK built
-from Harvard-Oxford cortical regions + labels_anatomy. build_from_atlas is a placeholder until the zip is available.
+NITRC project 'arterialatlas', CC BY), FSL MNI152 182x218x182 version in cache/Atlas_182_MNI152/ (user-downloaded;
+x axis is flipped relative to our grid and is handled here). build_from_atlas maps its 32 level-1 labels to our 5
+territories (see ATLAS_MAP). If the files are missing, the documented APPROXIMATE FALLBACK (build_fallback, from
+Harvard-Oxford cortical regions + labels_anatomy) is used.
 
 Fallback method: HO cortical regions are mapped to territories by name/position (seeds); every other brain voxel
 (white matter) takes the territory of its nearest seed in the same hemisphere; deep structures from labels_anatomy
 override. Brain = labels_anatomy > 0 excluding CSF labels 30-45 (ventricles/cisterns stay 0).
 """
+from pathlib import Path
 import numpy as np
 import nibabel as nib
 from scipy import ndimage as ndi
@@ -91,8 +93,56 @@ def build_fallback():
     return out
 
 
-def build_from_atlas(zp):
-    raise NotImplementedError("atlas zip present: map its label table (ArterialAtlasLables.txt) to 1-5 here")
+# Level-1 label table. The label text file was not available locally (cache/arterial/labels.txt is an HTML login
+# page), so names were taken from the paper's Fig 8 subregion legend and the order/side verified from the data:
+# odd = left, even = right (MNI x), level-2 parent from ArterialAtlas_level2 (1/2 ACA, 3/4 MCA, 5/6 PCA, 7/8 VB,
+# 9/10 ventricles), and each label's location/overlap with labels_anatomy.
+ATLAS_MAP = {  # level-1 pair (L,R) -> (name, our territory)
+    (1, 2): ("ACA (cortical/frontal-medial)", ACA),
+    (3, 4): ("ACA medial lenticulostriate (callosal/Heubner region)", LS),
+    (5, 6): ("MCA lateral lenticulostriate", LS),
+    (7, 8): ("MCA frontal", MCA),
+    (9, 10): ("MCA parietal", MCA),
+    (11, 12): ("MCA temporal", MCA),
+    (13, 14): ("MCA occipital", MCA),
+    (15, 16): ("MCA insula", MCA),
+    (17, 18): ("PCA temporal", PCA),
+    (19, 20): ("PCA occipital", PCA),
+    (21, 22): ("PCA posterior choroidal + thalamoperforating", PCA),
+    (23, 24): ("anterior choroidal + thalamoperforating (atlas parent: PCA)", PCA),
+    (25, 26): ("basilar / brainstem perforators", VB),
+    (27, 28): ("superior cerebellar (SCA)", VB),
+    (29, 30): ("inferior cerebellar (AICA/PICA)", VB),
+    (31, 32): ("ventricles (excluded)", 0),
+}
+
+
+def build_from_atlas(d):
+    anat = np.asarray(nib.load(str(DATA / "labels_anatomy.nii.gz")).dataobj).astype(np.int16)
+    img = nib.load(str(Path(d) / "ArterialAtlas.nii"))
+    # atlas affine: x = 90 - i; ours: x = i - 91  ->  flip axis 0 (verified: same shape, same y/z affine)
+    A = img.affine
+    assert img.shape[:3] == GRID_SHAPE and np.allclose(A[1:3, 1:3], grid_affine()[1:3, 1:3])         and np.isclose(A[0, 0], -1) and np.isclose(A[0, 3], 90) and np.isclose(grid_affine()[0, 3], -91), "grid mismatch"
+    at = np.rint(np.asarray(img.dataobj)[..., 0] if img.ndim == 4 else np.asarray(img.dataobj)).astype(np.int16)[::-1]
+    lut = np.zeros(33, np.uint8)
+    print("level-1 label -> territory mapping:")
+    for (l, r), (nm, t) in ATLAS_MAP.items():
+        lut[l] = lut[r] = t
+        print(f"  {l:2d}/{r:2d}  {nm:58s} -> {t} {NAMES.get(t, '-')}")
+    seeds = lut[np.clip(at, 0, 32)]
+    x, y, z = world()
+    brain = (anat > 0) & ~((anat >= 30) & (anat <= 45))
+    seeds[~brain] = 0
+    print("brain voxels without atlas territory (filled):", int((brain & (seeds == 0)).sum()))
+    gap_vb = brain & (seeds == 0) & np.isin(anat, [10, 11, 12, 13])   # cerebellum/brainstem gaps are vertebrobasilar
+    seeds[gap_vb] = VB
+    out = seeds.copy()
+    for side in (x < 0, x >= 0):
+        s = (seeds > 0) & side
+        idx = ndi.distance_transform_edt(~s, return_distances=False, return_indices=True)
+        m = brain & side & (seeds == 0)
+        out[m] = seeds[tuple(idx)][m]
+    return out
 
 
 def checks(out):
@@ -132,9 +182,9 @@ def check_images(out):
 
 
 def main():
-    zp = fetch_sources.fetch_arterial_atlas()
-    if zp is not None:
-        out = build_from_atlas(zp)
+    d = fetch_sources.fetch_arterial_atlas()
+    if d is not None:
+        out = build_from_atlas(d)
     else:
         print("Using APPROXIMATE fallback (Harvard-Oxford + anatomy labels)")
         out = build_fallback()

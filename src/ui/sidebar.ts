@@ -257,7 +257,7 @@ function initAbout(data: AppData): void {
     const h = document.createElement('h3');
     h.textContent = 'About';
     const p = document.createElement('p');
-    p.textContent = 'An educational tool for ICU registrars. The CT is a population-average template, not a patient scan, and the colour labels come from published brain atlases aligned to it, with some stylisation. Not for clinical decision-making.';
+    p.textContent = 'An educational tool for ICU registrars. The CT is a single anonymised, defaced, normal head CT from a public research dataset, warped into a standard brain space; the colour labels come from published brain atlases fitted to it, with some stylisation. Not for clinical decision-making.';
     const h2 = document.createElement('h3');
     h2.textContent = 'Data sources';
     const ul = document.createElement('ul');
@@ -265,6 +265,7 @@ function initAbout(data: AppData): void {
       ...data.volumes.baseVolumes.map((v) => v.attribution),
       'Lobes, insula, deep grey nuclei, lateral ventricles: Harvard–Oxford cortical and subcortical atlases (FMRIB, University of Oxford; FSL licence, non-commercial use)',
       'Cerebellum and brainstem divisions: Talairach Daemon atlas in MNI space (Lancaster et al. 2000), via nilearn',
+      'Arterial territories: Liu C-F et al. Digital 3D Brain MRI Arterial Territories Atlas. Sci Data 10, 74 (2023), doi:10.1038/s41597-022-01923-0 — CC BY 4.0 (NITRC “arterialatlas”); regrouped here into five territories',
       'Corpus callosum, internal capsule, third/fourth ventricles, aqueduct, basal cisterns, fissures/sulci, falx and tentorium: derived from the above and the CT in this project’s pipeline (approximate, for teaching)',
       'Rendering: NiiVue (BSD-2), three.js (MIT)',
     ];

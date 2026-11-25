@@ -16,6 +16,7 @@ import nibabel as nib
 from scipy import ndimage as ndi
 from nilearn import datasets
 from common import CACHE, DATA, GRID_SHAPE, grid_affine, resample_to_grid, save_nifti, structures
+import real_ct
 
 ND = str(CACHE / "nilearn")
 
@@ -26,14 +27,27 @@ def cormack_to_hu(c):
                     np.where(c <= 3100, (c - 900) / 11.0 - 124, (c - 2700) / 2.0 - 124))
 
 
-def build_ct():
-    img = nib.load(str(CACHE / "scct.nii"))
-    c = np.asarray(img.dataobj).astype(np.float32)
-    hu_img = nib.Nifti1Image(cormack_to_hu(c), img.affine)
-    hu = resample_to_grid(hu_img, order=1, cval=-1024.0)
-    hu = np.clip(np.round(hu), -1024, 3071)
-    save_nifti(hu, DATA / "ct.nii.gz", np.int16)
-    return hu
+def ct_is_real():
+    """True when public/data/ct.nii.gz is the registered real CT (build_ct.py writes cache/ct_source.txt; if the
+    marker is missing, compare with the preserved template output)."""
+    mk = CACHE / "ct_source.txt"
+    if mk.exists():
+        return mk.read_text().strip() == "real"
+    tpl = CACHE / "ct_template_hu.nii.gz"
+    if not tpl.exists():
+        return False
+    a = np.asarray(nib.load(str(DATA / "ct.nii.gz")).dataobj); b = np.asarray(nib.load(str(tpl)).dataobj)
+    return not (a.shape == b.shape and np.array_equal(a, b))
+
+
+def load_ct():
+    """HU volume (float32) from public/data/ct.nii.gz; builds it first (build_ct, which falls back to the Rorden
+    template) only if it does not exist yet. This module never writes ct.nii.gz itself."""
+    p = DATA / "ct.nii.gz"
+    if not p.exists():
+        import build_ct
+        build_ct.main([])
+    return np.asarray(nib.load(str(p)).dataobj).astype(np.float32)
 
 
 def tal(level):
@@ -247,6 +261,40 @@ def add_csf_labels(out, hu):
     return out
 
 
+def real_ct_labels(lobes, hu, hemi, cc, ic, nucm, vent):
+    """Anatomy labels fitted to the real CT. `lobes` = atlas lobe/WM labels (1-6); cc/ic/nucm/vent = atlas-derived
+    masks. Steps: real brain mask -> posterior fossa (tentorium surface, swept-ellipse brainstem, cerebellum) ->
+    clip every brain label to the mask -> nearest-label fill of unlabelled mask voxels (same hemisphere) -> deep grey
+    / CC / IC -> CSF spaces from the CT (real_ct.csf_labels)."""
+    bm = real_ct.brain_mask(hu)
+    H = real_ct.tentorium_height(hu, bm)
+    stem = real_ct.brainstem_model(bm)
+    nuc_any = np.any(list(nucm.values()), axis=0)
+    stem[nuc_any] = 0                                                  # deep grey (thalamus) wins over the stem top
+    cb = real_ct.cerebellum(bm, H, stem)
+    np.save(CACHE / "brain_mask.npy", bm); np.save(CACHE / "tentorium_height.npy", H.astype(np.float32))
+    supra = bm & ~cb & (stem == 0)
+    out = lobes.copy()
+    out[~supra] = 0
+    for h in (1, 2):                                                   # fill mask voxels the atlas left unlabelled
+        hm = hemi == h
+        src = np.isin(out, [1, 2, 3, 4, 6]) & hm
+        _, idx = ndi.distance_transform_edt(~src, return_indices=True)
+        nearest = out[tuple(idx)]
+        sel = supra & hm & (out == 0)
+        out[sel] = nearest[sel]
+    out[supra & (out == 0)] = 1
+    out[cc & supra] = 50
+    out[ic & supra & ~cc] = 51
+    for v, m in nucm.items():
+        out[m & supra] = v
+    out[cb] = 10
+    out[stem > 0] = stem[stem > 0]
+    out, info = real_ct.csf_labels(out, hu, bm, H, vent)
+    np.save(CACHE / "labels_anatomy_base.npy", out)
+    return out
+
+
 def build_anatomy_labels(hu):
     lobe, L = tal("lobe")
     cort, C = ho("cort-maxprob-thr25-1mm")
@@ -298,7 +346,12 @@ def build_anatomy_labels(hu):
         out[sel] = nearest[sel]
     out = majority_filter(out, [1, 2, 3, 4, 6]).astype(np.uint8)    # lobes only; labelled set unchanged
 
-    # cerebellum / brainstem from Talairach, only outside the cerebral mask
+    real = ct_is_real()
+    if real:
+        out = real_ct_labels(out, hu, hemi, cc, ic, nucm, vent)
+        save_nifti(out, DATA / "labels_anatomy.nii.gz", np.uint8)
+        return out, out > 0
+    # template-CT path: cerebellum / brainstem from Talairach, only outside the cerebral mask
     pfv = np.zeros(GRID_SHAPE, np.uint8)
     for name, v in {"Anterior Lobe": 10, "Posterior Lobe": 10, "Midbrain": 11, "Pons": 12, "Medulla": 13}.items():
         pfv[lobe == L[name]] = v
@@ -369,7 +422,7 @@ def report(out, brain, hu):
 
 
 def main():
-    hu = build_ct()
+    hu = load_ct()
     out, brain = build_anatomy_labels(hu)
     a = nib.load(str(DATA / "ct.nii.gz")); b = nib.load(str(DATA / "labels_anatomy.nii.gz"))
     assert np.allclose(a.affine, b.affine) and a.shape == b.shape == GRID_SHAPE
