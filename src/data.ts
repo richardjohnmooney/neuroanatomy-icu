@@ -12,11 +12,13 @@ export interface AppData {
 }
 
 const base = import.meta.env.BASE_URL + 'data/';
+/** Data file URL with the build's data version, so a new deploy never mixes cached and fresh files. */
+const versioned = (f: string) => `${base}${f}?v=${__DATA_VERSION__}`;
 
 export async function loadData(): Promise<AppData> {
   const [volumes, manifest] = await Promise.all([
-    fetch(base + 'volumes.json').then((r) => r.json() as Promise<VolumesManifest>),
-    fetch(base + 'structures.json').then((r) => r.json() as Promise<StructuresManifest>),
+    fetch(versioned('volumes.json')).then((r) => r.json() as Promise<VolumesManifest>),
+    fetch(versioned('structures.json')).then((r) => r.json() as Promise<StructuresManifest>),
   ]);
   const byId = new Map(manifest.structures.map((s) => [s.id, s]));
   const byLabel = new Map<string, Map<number, Structure>>();
@@ -24,7 +26,7 @@ export async function loadData(): Promise<AppData> {
     if (!byLabel.has(s.layer)) byLabel.set(s.layer, new Map());
     byLabel.get(s.layer)!.set(s.labelValue, s);
   }
-  return { volumes, manifest, byId, byLabel, url: (f) => base + f };
+  return { volumes, manifest, byId, byLabel, url: versioned };
 }
 
 /** Patient side from MNI x (RAS: +x is patient Right). */

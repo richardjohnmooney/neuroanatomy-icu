@@ -207,7 +207,7 @@ function initControls(data: AppData): void {
 
   // Keyboard: arrows / PageUp / PageDown step the slice in the current plane (Shift = 5 mm).
   window.addEventListener('keydown', (e) => {
-    if ((e.target as HTMLElement).closest('input, select, textarea')) return;
+    if ((e.target as Element | null)?.closest?.('input, select, textarea')) return;
     const up = e.key === 'ArrowUp' || e.key === 'PageUp';
     const down = e.key === 'ArrowDown' || e.key === 'PageDown';
     if (!up && !down) return;
