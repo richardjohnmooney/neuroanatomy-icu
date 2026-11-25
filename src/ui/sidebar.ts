@@ -1,5 +1,5 @@
 // Topic tabs, view controls, structure list, info card, about dialog. DOM only; talks via the store.
-import { state, setState, subscribe } from '../state';
+import { GHOST_OPACITY, state, setState, subscribe } from '../state';
 import type { Plane, Vec3 } from '../types';
 import { type AppData, topicStructures } from '../data';
 
@@ -35,6 +35,7 @@ export function applyTopic(data: AppData, topicId: string): void {
     topicId,
     visible: new Set(topicStructures(data, topicId).filter((s) => !off.has(s.group)).map((s) => s.id)),
     ghost: new Set(data.manifest.structures.filter((s) => ctx.has(s.group)).map((s) => s.id)),
+    opacity3d: {},
     selectedId: null,
     ...(t.focus ? { crosshair: t.focus } : {}),
     ...(t.plane ? { plane: t.plane } : {}),
@@ -224,6 +225,44 @@ function markPlane(): void {
     b.setAttribute('aria-pressed', String(b.dataset.plane === state.plane)));
 }
 
+// ---- 3D opacity sliders ------------------------------------------------------------------
+// Group slider sets all its structures; a structure slider updates the group slider to the mean.
+// Values go to state.opacity3d (only the 3D model uses them) and never re-render the list, so
+// dragging stays smooth.
+function opacityOf(id: string, def: number): number {
+  return state.opacity3d[id] ?? def;
+}
+function setOpacity(ids: string[], v: number): void {
+  const next = { ...state.opacity3d };
+  for (const id of ids) next[id] = v;
+  setState({ opacity3d: next }, 'ui');
+}
+function makeSlider(value: number, title: string): HTMLInputElement {
+  const r = document.createElement('input');
+  r.type = 'range'; r.min = '0'; r.max = '1'; r.step = '0.05';
+  r.value = String(value);
+  r.className = 'op-slider';
+  r.title = title;
+  r.onclick = (e) => e.stopPropagation(); // rows select on click
+  r.onpointerdown = (e) => e.stopPropagation();
+  return r;
+}
+/** Wire a group slider to its structure sliders. */
+function linkSliders(group: HTMLInputElement, children: { id: string; el: HTMLInputElement }[]): void {
+  const ids = children.map((c) => c.id);
+  group.oninput = () => {
+    const v = Number(group.value);
+    for (const c of children) c.el.value = group.value;
+    setOpacity(ids, v);
+  };
+  for (const c of children) {
+    c.el.oninput = () => {
+      setOpacity([c.id], Number(c.el.value));
+      group.value = String(children.reduce((a, x) => a + Number(x.el.value), 0) / children.length);
+    };
+  }
+}
+
 function renderList(data: AppData): void {
   const host = $('structure-list');
   host.replaceChildren();
@@ -245,8 +284,13 @@ function renderList(data: AppData): void {
       for (const s of items) { if (allOn) v.delete(s.id); else v.add(s.id); }
       setState({ visible: v }, 'ui');
     };
-    title.append(g.name, tog);
+    const gname = document.createElement('span');
+    gname.className = 'group-name';
+    gname.textContent = g.name;
+    const gSlider = makeSlider(items.reduce((a, s) => a + opacityOf(s.id, 1), 0) / items.length, `3D opacity — all ${g.name.toLowerCase()}`);
+    title.append(gname, gSlider, tog);
     box.append(title);
+    const childSliders: { id: string; el: HTMLInputElement }[] = [];
     for (const s of items) {
       const row = document.createElement('div');
       row.className = 'structure-item';
@@ -263,13 +307,18 @@ function renderList(data: AppData): void {
       const sw = document.createElement('span');
       sw.className = 'swatch'; sw.style.background = s.color;
       const name = document.createElement('span');
+      name.className = 'item-name';
       name.textContent = s.name;
-      row.append(cb, sw, name);
+      name.title = s.name;
+      const sl = makeSlider(opacityOf(s.id, 1), `3D opacity — ${s.name}`);
+      childSliders.push({ id: s.id, el: sl });
+      row.append(cb, sw, name, sl);
       row.onclick = () => setState({ selectedId: state.selectedId === s.id ? null : s.id }, 'list');
       row.onmouseenter = () => setState({ hoverId: s.id }, 'list');
       row.onmouseleave = () => setState({ hoverId: null }, 'list');
       box.append(row);
     }
+    linkSliders(gSlider, childSliders);
     host.append(box);
   }
   renderContext(data, host, topic.context ?? []);
@@ -302,9 +351,27 @@ function renderContext(data: AppData, host: HTMLElement, groupIds: string[]): vo
     const sw = document.createElement('span');
     sw.className = 'swatch ghost';
     const name = document.createElement('span');
+    name.className = 'item-name';
     name.textContent = g!.name;
-    row.append(cb, sw, name);
+    const gSlider = makeSlider(items.reduce((a, s) => a + opacityOf(s.id, GHOST_OPACITY), 0) / items.length, `3D opacity — all ${g!.name.toLowerCase()}`);
+    row.append(cb, sw, name, gSlider);
     box.append(row);
+    const childSliders: { id: string; el: HTMLInputElement }[] = [];
+    for (const s of items) {
+      const sub = document.createElement('div');
+      sub.className = 'structure-item sub';
+      const ssw = document.createElement('span');
+      ssw.className = 'swatch'; ssw.style.background = s.color;
+      const sname = document.createElement('span');
+      sname.className = 'item-name';
+      sname.textContent = s.name;
+      sname.title = s.name;
+      const sl = makeSlider(opacityOf(s.id, GHOST_OPACITY), `3D opacity — ${s.name}`);
+      childSliders.push({ id: s.id, el: sl });
+      sub.append(ssw, sname, sl);
+      box.append(sub);
+    }
+    linkSliders(gSlider, childSliders);
   }
   host.append(box);
 }

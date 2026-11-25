@@ -61,7 +61,7 @@ select {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 230px 1fr 280px;
+  grid-template-columns: 290px 1fr 280px;
   gap: 0;
 }
 .sidebar, .info {
@@ -82,7 +82,7 @@ select {
 
 /* Collapsible teaching notes pane */
 body.notes-collapsed .info { display: none; }
-body.notes-collapsed .workspace { grid-template-columns: 230px 1fr; }
+body.notes-collapsed .workspace { grid-template-columns: 290px 1fr; }
 .check { display: flex; gap: 6px; align-items: center; margin: 6px 0; font-size: 13px; }
 .seg { display: flex; }
 .seg button { flex: 1; border-radius: 0; padding: 4px 0; font-size: 12px; }
@@ -148,7 +148,7 @@ dialog::backdrop { background: #000a; }
 
 /* Narrow screens: stack panels */
 @media (max-width: 1100px) {
-  .workspace, body.notes-collapsed .workspace { grid-template-columns: 200px 1fr; }
+  .workspace, body.notes-collapsed .workspace { grid-template-columns: 250px 1fr; }
   .info { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--border); max-height: 30vh; }
   .viewers[data-count="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
   .viewers[data-count="3"] #viewer-3d { grid-column: 1 / -1; }
@@ -161,3 +161,11 @@ dialog::backdrop { background: #000a; }
   .viewers[data-count] #viewer-3d { grid-column: auto; }
   .viewer { height: 90vw; }
 }
+
+/* 3D opacity sliders in the structure list */
+.structure-list .group-title { align-items: center; gap: 6px; }
+.structure-list .group-name { flex: 1; min-width: 0; }
+.structure-item .item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.structure-item.sub { padding-left: 24px; font-size: 12px; color: var(--muted); }
+.op-slider { width: 72px; flex: none; height: 14px; margin: 0; accent-color: var(--accent); cursor: ew-resize; }
+.group-title .op-slider { width: 72px; }

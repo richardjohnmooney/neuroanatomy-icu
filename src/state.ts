@@ -10,6 +10,7 @@ export interface AppState {
   windowId: string;             // WindowPreset.id
   visible: Set<string>;         // focus structure ids: coloured on slices, solid in 3D
   ghost: Set<string>;           // context structure ids: translucent in 3D only, never on slices
+  opacity3d: Record<string, number>; // per-structure 3D opacity 0..1 set by sliders; missing = default (1, or ghost level)
   selectedId: string | null;    // structure shown in info card / highlighted
   hoverId: string | null;
   overlayOpacity: number;       // 0..1 colour over CT
@@ -19,6 +20,9 @@ export interface AppState {
   vesselSlab: number;           // mm either side of the slice from which vessels are projected (0 = exact slice)
   showCrosshair: boolean;       // draw crosshair lines on the slice views (position stays linked either way)
 }
+
+/** Default 3D opacity of context ("ghost") structures — faint so the topic's own structures dominate. */
+export const GHOST_OPACITY = 0.12;
 
 type Listener = (s: AppState, changed: Set<keyof AppState>) => void;
 
@@ -33,6 +37,7 @@ export const state: AppState = {
   windowId: 'brain',
   visible: new Set(),
   ghost: new Set(),
+  opacity3d: {},
   selectedId: null,
   hoverId: null,
   overlayOpacity: 0.45,

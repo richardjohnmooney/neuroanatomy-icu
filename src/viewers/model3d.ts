@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { AppData } from '../data';
 import { displayName } from '../data';
 import type { Structure, Vec3 } from '../types';
-import { setState, state, subscribe } from '../state';
+import { GHOST_OPACITY, setState, state, subscribe } from '../state';
 import type { AppState } from '../state';
 
 export interface Model3DOptions { container: HTMLElement; data: AppData; readout: HTMLElement; }
@@ -21,8 +21,6 @@ interface Entry {
 
 const BRAIN_CENTRE_MNI = new THREE.Vector3(0, -18, 15);
 const EXPLODE_MM = 25;
-/** Opacity of context ("ghost") structures — faint enough that the topic's structures dominate. */
-const GHOST_OPACITY = 0.12;
 const SLICE_COLOR = 0x4fb3ff;
 
 export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): void }> {
@@ -150,9 +148,12 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
       const isHover = id === s.hoverId;
       const ghost = !s.visible.has(id) && s.ghost.has(id); // context-only structure
       const fade = sel !== null && !isSel;
-      m.transparent = ghost || fade;
-      m.opacity = ghost ? GHOST_OPACITY : fade ? 0.3 : 1;
-      m.depthWrite = !(ghost || fade);
+      // Slider value if set, else the default for its role; selection fades the others further.
+      let op = s.opacity3d[id] ?? (ghost ? GHOST_OPACITY : 1);
+      if (fade) op = Math.min(op, 0.3);
+      m.transparent = op < 1;
+      m.opacity = op;
+      m.depthWrite = op >= 1;
       m.side = clip ? THREE.DoubleSide : THREE.FrontSide;
       m.clippingPlanes = clip ? [clipPlane] : null;
       m.emissive.set(st.color);
@@ -261,7 +262,7 @@ export async function createModel3D(o: Model3DOptions): Promise<{ dispose(): voi
   resize();
 
   // ---- store
-  const relevant: (keyof AppState)[] = ['crosshair', 'plane', 'clip3d', 'explode', 'visible', 'ghost', 'selectedId', 'hoverId'];
+  const relevant: (keyof AppState)[] = ['crosshair', 'plane', 'clip3d', 'explode', 'visible', 'ghost', 'opacity3d', 'selectedId', 'hoverId'];
   const unsub = subscribe((s, changed) => {
     if (!relevant.some((k) => changed.has(k))) return;
     apply(s);
