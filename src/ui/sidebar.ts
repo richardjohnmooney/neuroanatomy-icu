@@ -27,7 +27,11 @@ export function applyTopic(data: AppData, topicId: string): void {
   if (!t) return;
   const off = new Set(t.defaultHidden ?? []);
   const ctx = new Set(t.context ?? []);
+  const vols = data.volumes.baseVolumes;
+  const scan = vols.find((v) => v.id === t.scan) ?? vols[0];
+  const scanPatch = scan.id === state.baseVolumeId ? {} : { baseVolumeId: scan.id, windowId: scan.windows[0].id };
   setState({
+    ...scanPatch,
     topicId,
     visible: new Set(topicStructures(data, topicId).filter((s) => !off.has(s.group)).map((s) => s.id)),
     ghost: new Set(data.manifest.structures.filter((s) => ctx.has(s.group)).map((s) => s.id)),
@@ -130,11 +134,32 @@ function initControls(data: AppData): void {
   layout.value = state.layout;
   layout.onchange = () => setState({ layout: layout.value as 'single' | 'multi' }, 'ui');
 
+  // Scan (base volume) and its window presets. Switching scan selects that scan's first window.
+  const scan = $<HTMLSelectElement>('scan-select');
+  for (const v of data.volumes.baseVolumes) scan.append(new Option(v.label, v.id));
+  scan.value = state.baseVolumeId;
   const win = $<HTMLSelectElement>('window-select');
-  const vol = data.volumes.baseVolumes.find((v) => v.id === state.baseVolumeId)!;
-  for (const w of vol.windows) win.append(new Option(w.label, w.id));
-  win.value = state.windowId;
+  const fillWindows = () => {
+    const vol = data.volumes.baseVolumes.find((v) => v.id === state.baseVolumeId) ?? data.volumes.baseVolumes[0];
+    win.replaceChildren(...vol.windows.map((w) => new Option(w.label, w.id)));
+    win.value = state.windowId;
+  };
+  fillWindows();
+  scan.onchange = () => {
+    const vol = data.volumes.baseVolumes.find((v) => v.id === scan.value);
+    if (vol) setState({ baseVolumeId: vol.id, windowId: vol.windows[0].id }, 'ui');
+  };
   win.onchange = () => setState({ windowId: win.value }, 'ui');
+  const caption = document.querySelector('#viewer-ct figcaption span');
+  const showCaption = () => {
+    const v = data.volumes.baseVolumes.find((x) => x.id === state.baseVolumeId);
+    if (caption && v) caption.textContent = v.label;
+  };
+  showCaption();
+  subscribe((_s, changed) => {
+    if (changed.has('baseVolumeId')) { scan.value = state.baseVolumeId; fillWindows(); showCaption(); }
+    else if (changed.has('windowId')) win.value = state.windowId;
+  });
 
   const op = $<HTMLInputElement>('opacity-range');
   op.value = String(state.overlayOpacity);

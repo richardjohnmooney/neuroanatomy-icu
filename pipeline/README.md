@@ -59,3 +59,8 @@ cerebellum (posterior fossa below the tentorium, behind the petrous ridge), CT-t
 falx midline line. All brain labels are clipped to the mask and gaps filled from the nearest same-hemisphere label.
 Template CT keeps the old atlas-only path. `build_overlays.py` uses the same mask / tentorium / midline.
 Check images: `cache/check_fit_*.png`.
+
+## Simulated CTA / CTV (`build_cta.py`)
+Writes `public/data/cta.nii.gz` (arterial phase) and `ctv.nii.gz` (venous phase): int16 HU, same header/grid as `ct.nii.gz`, plus `cache/check_cta_*.png`. Runs after `build_vessels.main()` (~10 s) and reuses `build_vessels.prepare_geometry` (final centrelines: arteries, derived sinuses, deep veins, snapped sigmoid/confluence; cavernous sinus = rounded box) with their **true radii**.
+- Per vessel: partial-volume fraction f = clip(r - d + 0.5, 0, 1) from the distance to the centreline resampled at 0.2 mm; f and f*HU are blurred (PSF sigma 0.6 mm); HU = CT*(1-F) + blurred f*HU; Gaussian noise (sigma measured from the CT in eroded cerebral parenchyma, ~2.3 HU) x F added only where F > 0.01; voxels with CT > 300 never go below the original; everything else is bit-identical to `ct.nii.gz`.
+- Lumen HU, CTA: ICA/basilar/vertebral 380, MCA/ACA/PCA 380 tapering to 330 along each path, ACom/PCom 350, sinuses 140, cavernous 200, deep veins 110. CTV: sinuses and deep veins 300, cavernous 260, arteries 170.

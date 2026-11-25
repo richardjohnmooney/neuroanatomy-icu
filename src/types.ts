@@ -52,6 +52,7 @@ export interface Topic {
   groups: string[];       // groups visible when topic active
   focus?: Vec3;           // default crosshair, MNI mm
   plane?: Plane;          // default plane for this topic
+  scan?: string;          // default BaseVolume.id for this topic (else the first base volume)
   defaultHidden?: string[]; // groups listed in `groups` but switched off when the topic opens
   /** Context groups: shown only in the 3D model as a translucent "ghost" (never coloured on slices),
    *  so the topic's own structures stand out. Each can be toggled in the sidebar. */

@@ -269,14 +269,10 @@ def load_vessel_defs():
     return spec["arteries"] + spec["veins"]
 
 
-def build():
-    G = Grid()
-    dura = np.asarray(nib.load(str(DATA / "labels_dura.nii.gz")).dataobj).astype(np.uint8)
-    anat = np.asarray(nib.load(str(DATA / "labels_anatomy.nii.gz")).dataobj).astype(np.uint8)
-    ct = np.asarray(nib.load(str(DATA / "ct.nii.gz")).dataobj).astype(np.float32)
+def prepare_geometry(G, dura, defs):
+    """Final per-vessel centrelines (arteries + derived sinuses + snapped sigmoid/confluence).
+    Returns (vessels, vd, dnotes): vessels = [(def, paths|None)], vd = id -> paths (RIGHT/authored side)."""
     sdict = {s["id"]: s for s in structures() if s["layer"] == "vessels"}
-    defs = load_vessel_defs()
-
     try:
         derived, dnotes, conf = derive_sinuses(dura, G)
     except Exception as e:                                     # fall back wholesale
@@ -309,6 +305,19 @@ def build():
         cf = vd["confluence-of-sinuses"][0]
         vd["confluence-of-sinuses"] = [np.array([conf, conf + np.array([0, -1.0, 0])])]
     # deep veins: end of the straight sinus should coincide with Galen; ok as authored
+
+    return vessels, vd, dnotes
+
+
+def build():
+    G = Grid()
+    dura = np.asarray(nib.load(str(DATA / "labels_dura.nii.gz")).dataobj).astype(np.uint8)
+    anat = np.asarray(nib.load(str(DATA / "labels_anatomy.nii.gz")).dataobj).astype(np.uint8)
+    ct = np.asarray(nib.load(str(DATA / "ct.nii.gz")).dataobj).astype(np.float32)
+    sdict = {s["id"]: s for s in structures() if s["layer"] == "vessels"}
+    defs = load_vessel_defs()
+
+    vessels, vd, dnotes = prepare_geometry(G, dura, defs)
 
     lab = np.zeros(G.shape, np.uint8)
     meshes = {}

@@ -40,6 +40,60 @@
         }
       ],
       "attribution": "Head CT: CQ500 dataset, case CQ500-CT-148 (qure.ai; Chilamkurthy et al., Lancet 2018;392:2388), CC BY-NC-SA 4.0. Resampled, registered to MNI152 and defaced; this derived image is shared under the same licence."
+    },
+    {
+      "id": "cta",
+      "label": "CT angiogram (simulated)",
+      "modality": "CT",
+      "file": "cta.nii.gz",
+      "windows": [
+        {
+          "id": "cta",
+          "label": "Angio (W600 L200)",
+          "width": 600,
+          "level": 200
+        },
+        {
+          "id": "brain",
+          "label": "Brain (W80 L40)",
+          "width": 80,
+          "level": 40
+        },
+        {
+          "id": "bone",
+          "label": "Bone (W2000 L500)",
+          "width": 2000,
+          "level": 500
+        }
+      ],
+      "attribution": "Simulated from the non-contrast CT (CQ500-CT-148) by adding contrast along this app's vessel model — not a real angiogram; only the modelled main vessels are shown."
+    },
+    {
+      "id": "ctv",
+      "label": "CT venogram (simulated)",
+      "modality": "CT",
+      "file": "ctv.nii.gz",
+      "windows": [
+        {
+          "id": "ctv",
+          "label": "Venogram (W600 L180)",
+          "width": 600,
+          "level": 180
+        },
+        {
+          "id": "brain",
+          "label": "Brain (W80 L40)",
+          "width": 80,
+          "level": 40
+        },
+        {
+          "id": "bone",
+          "label": "Bone (W2000 L500)",
+          "width": 2000,
+          "level": 500
+        }
+      ],
+      "attribution": "Simulated from the non-contrast CT (CQ500-CT-148) by adding contrast along this app's vessel model — not a real venogram; only the modelled main vessels are shown."
     }
   ],
   "labelLayers": [

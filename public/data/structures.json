@@ -135,11 +135,12 @@
         -12
       ],
       "plane": "axial",
-      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. Switch on 'Arterial territories' to see which territory a hypodensity belongs to.",
+      "intro": "The brain is supplied by two internal carotid arteries (anterior circulation: ACA and MCA) and two vertebral arteries joining as the basilar (posterior circulation: PCA, brainstem and cerebellum). The circle of Willis, in the suprasellar and interpeduncular cisterns, links them. Venous blood drains to the dural venous sinuses in the edges of the falx and tentorium, then out through the sigmoid sinuses to the internal jugular veins. Non-contrast CT shows vessels only when they contain dense clot (hyperdense artery or sinus) or calcification — so knowing where they run tells you where to look. This tab opens on a simulated CT angiogram (switch to the venogram or the plain CT with 'Scan'); use 'Vessel slab' to follow vessels across slices. Switch on 'Arterial territories' to see which territory a hypodensity belongs to.",
       "context": [
         "lobes",
         "posterior-fossa"
-      ]
+      ],
+      "scan": "cta"
     }
   ],
   "structures": [
