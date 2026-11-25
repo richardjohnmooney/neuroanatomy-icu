@@ -36,7 +36,7 @@ export const state: AppState = {
   selectedId: null,
   hoverId: null,
   overlayOpacity: 0.45,
-  clip3d: true,
+  clip3d: false,                // user preference: whole 3D model by default (checkbox can turn cutting on)
   explode: 0,
   radiological: true,
   vesselSlab: 3,
